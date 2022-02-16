@@ -2,6 +2,18 @@
 from ibapi.contract import Contract
 from Helpers import Bars as bars, Orders as orders
 from Globals import Globals as gb
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+log_filename = "logs/amd.log"
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
+file_handler = logging.FileHandler(log_filename, mode="a", encoding=None, delay=False)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 #Bot Logic
 class AMDBot:
@@ -18,7 +30,7 @@ class AMDBot:
         self.ib = ib
 
     def setup(self):
-        print("Setting up AMD")
+        logger.info("Setting up AMD")
         self.ib.reqIds(-1)
         
         self.symbol = "AMD"
@@ -40,7 +52,7 @@ class AMDBot:
 
     #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
-        print("current order ID ",  gb.Globals.getInstance().orderId)
+        logger.info("current order ID {}".format(gb.Globals.getInstance().orderId))
         if not self.startingBars or len(self.startingBars) < 12:
             bar = bars.Bar()
             bar.close = close
@@ -59,10 +71,10 @@ class AMDBot:
             if self.symbol not in gb.Globals.getInstance().currentOrders:
                 expectedHigh = self.openBar.high + self.openBar.high * 0.001
                 expectedLow = self.openBar.low - self.openBar.low * 0.001
-                print("current high: ", high)
-                print("expected high: ", expectedHigh)
-                print("current low:", low)
-                print("expected low:", expectedLow)
+                logger.info("current high: {}".format( high))
+                logger.info("expected high: {}".format(expectedHigh))
+                logger.info("current low: {}".format(low))
+                logger.info("expected low: {}".format(expectedLow))
                 
                 risk = expectedHigh - expectedLow
                 quantity = 50
@@ -81,7 +93,7 @@ class AMDBot:
                     #Place Bracket Order
                     for o in bracket:
                         if (o.orderType == "STP"):
-                            print("The stoploss order is: ", o.orderId)
+                            logger.info("The stoploss order is: {}".format(o.orderId))
                             
                             gb.Globals.getInstance().orderResponses[o.orderId] = {}
                             gb.Globals.getInstance().orderResponses[o.orderId]["orders"] = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "SELL", quantity, entryLimitforShort, profitTargetForShort, stopLossForShort)
@@ -91,7 +103,7 @@ class AMDBot:
                     
                     self.update_globals_for_orders()
                     
-                    print("Buy AMD")
+                    logger.info("Buy AMD")
                 elif low < expectedLow:
                     
                     bracket = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "SELL", quantity, entryLimitforShort, profitTargetForShort, stopLossForShort)
@@ -99,7 +111,7 @@ class AMDBot:
                     #Place Bracket Order
                     for o in bracket:
                         if (o.orderType == "STP"):
-                            print("The stoploss order is: ", o.orderId)
+                            logger.info("The stoploss order is: {}".format(o.orderId))
                             gb.Globals.getInstance().orderResponses[o.orderId] = {}
                             gb.Globals.getInstance().orderResponses[o.orderId]["orders"] = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "BUY", quantity, entryLimitForLong, profitTargetForLong, stopLossForLong)
                             gb.Globals.getInstance().orderResponses[o.orderId]["contract"] = self.contract
@@ -107,7 +119,7 @@ class AMDBot:
                         self.ib.placeOrder(o.orderId, self.contract, o)
                         
                     self.update_globals_for_orders()
-                    print("Short AMD")
+                    logger.info("Short AMD")
 
     def update_globals_for_orders(self):
         gb.Globals.getInstance().currentOrders["AMD"] = gb.Globals.getInstance().orderId

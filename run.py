@@ -4,14 +4,26 @@ from IB import IBClient as ibClient
 import threading
 import time
 import pytz
+import logging
+import Constants as const
+import os
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+log_filename = "logs/main.log"
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
+file_handler = logging.FileHandler(log_filename, mode="a", encoding=None, delay=False)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 def run():
     #Connect to IB on init
     ib = ibClient.IBApi()
-    ib.connect("127.0.0.1", 7466, 1)
+    ib.connect(const.LOCALIP, const.PORT, 1)
+    logger.info("Connected at port {}".format(const.PORT))
     
-
-    print("Connected!")
     ib_thread = threading.Thread(target=run_loop, args=(ib,), daemon=True)
     ib_thread.start()
     
