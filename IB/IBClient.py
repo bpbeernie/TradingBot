@@ -3,6 +3,7 @@ from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from Globals import Globals as gb
 import threading
+from Helpers import Orders as ord
 
 #Class for Interactive Brokers Connection
 class IBApi(EWrapper,EClient):
@@ -64,3 +65,14 @@ class IBApi(EWrapper,EClient):
     def error(self, id, errorCode, errorMsg):
         print(errorCode)
         print(errorMsg)
+        
+    def updatePortfolio(self, contract, position,
+                    marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName):
+        
+        super().updatePortfolio(contract, position, marketPrice,
+                                marketValue,averageCost, unrealizedPNL,
+                                realizedPNL, accountName)
+        
+        closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().orderId, position)
+        self.placeOrder(closingOrder.orderId, contract, closingOrder)
+        gb.Globals.getInstance().orderId +=1

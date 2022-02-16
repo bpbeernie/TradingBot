@@ -87,3 +87,26 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
 
     bracketOrders = [parent, profitTargetOrder, stopLossOrder]
     return bracketOrders
+
+
+def closingOrder(symbol, orderId, quantity):    
+    contract = Contract()
+    contract.symbol = symbol.upper()
+    contract.secType = "STK"
+    contract.exchange = "SMART"
+    contract.currency = "USD"
+    
+    if (quantity > 0):
+        action = "SELL"
+    else:
+        action = "BUY"
+    
+    # Create Parent Order / Initial Entry
+    closingOrder = Order()
+    closingOrder.orderId = orderId
+    closingOrder.orderType = "MKT"
+    closingOrder.action = action
+    closingOrder.totalQuantity = quantity
+    closingOrder.transmit = True
+ 
+    return closingOrder
