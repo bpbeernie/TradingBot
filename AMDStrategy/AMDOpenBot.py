@@ -76,8 +76,8 @@ class AMDBot:
                 self.openBar.high = max(o.high for o in self.startingBars)
                 
                 #If opening candle too small, artifically increment it.
-                if (self.openBar.high - self.openBar.low < self.openBar.low * const.RISKMULTIPLIER * 4 ):
-                    self.openBar.high = self.openBar.low + self.openBar.low * const.RISKMULTIPLIER * 4
+                if (self.openBar.high - self.openBar.low < self.openBar.low * const.RISKMULTIPLIER * 3 ):
+                    self.openBar.high = self.openBar.low + self.openBar.low * const.RISKMULTIPLIER * 3
 
             if self.symbol not in gb.Globals.getInstance().currentOrders:
                 expectedHigh = self.openBar.high + self.openBar.high * const.RISKMULTIPLIER
