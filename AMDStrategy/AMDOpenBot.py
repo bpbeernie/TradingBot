@@ -141,6 +141,6 @@ class AMDBot:
         today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
         if not self.processedEndOfDay and now > today1259pm:
             logger.info("Processed EOD")
-            self.ib.reqGlobalCancel()
-            self.ib.reqAccountUpdates()
             self.processedEndOfDay = True
+            self.ib.reqGlobalCancel()
+            self.ib.reqAccountUpdates(True, "1")
