@@ -54,18 +54,12 @@ class IBApi(EWrapper,EClient):
     def orderStatus(self, orderId , status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
         print("OrderStatus. Id: ", orderId, ", Status: ", status, ", Filled: ", filled, ", Remaining: ", remaining, ", LastFillPrice: ", lastFillPrice)
         
-        self.lock.acquire()
-        if status == "Filled" and orderId in gb.Globals.getInstance().orderResponses:
-            print("Response orders are being filled!")
-            orders = gb.Globals.getInstance().orderResponses[orderId]["orders"]
-            contract = gb.Globals.getInstance().orderResponses[orderId]["contract"]
-            for o in orders:
-                self.placeOrder(o.orderId, contract, o)
+        try:
+            for bot in self._botList:
+                bot.updateStatus(orderId, status)
+        except Exception as e:
+            print(e)
         
-            gb.Globals.getInstance().orderId += 3
-            del gb.Globals.getInstance().orderResponses[orderId]
-        self.lock.release()
-            
     # Listen for realtime bars
     def realtimeBar(self, reqId, time, open_, high, low, close,volume, wap, count):
         super().realtimeBar(reqId, time, open_, high, low, close, volume, wap, count)
@@ -88,7 +82,7 @@ class IBApi(EWrapper,EClient):
         
         logger.info("Closing all Positions!")
         gb.Globals.getInstance().orderResponses = {}
-        closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().orderId, position)
-        self.placeOrder(closingOrder.orderId, contract, closingOrder)
+        closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().orderId, position)
+        self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
         gb.Globals.getInstance().orderId +=1
 

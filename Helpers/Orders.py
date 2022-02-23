@@ -85,8 +85,7 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     stopLossOrder.ocaGroup = ocaGroup
     stopLossOrder.transmit = True
 
-    bracketOrders = [parent, profitTargetOrder, stopLossOrder]
-    return bracketOrders
+    return parent, profitTargetOrder, stopLossOrder
 
 
 def closingOrder(symbol, orderId, quantity):    
@@ -109,4 +108,4 @@ def closingOrder(symbol, orderId, quantity):
     closingOrder.totalQuantity = quantity
     closingOrder.transmit = True
  
-    return closingOrder
+    return contract, closingOrder

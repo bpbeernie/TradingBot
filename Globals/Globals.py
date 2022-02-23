@@ -1,6 +1,6 @@
 class Globals:
     orderId = 1
-    currentOrders = {}
+    activeOrders = {}
     orderResponses = {}
     
     __instance = None

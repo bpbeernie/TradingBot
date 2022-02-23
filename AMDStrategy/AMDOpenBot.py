@@ -8,6 +8,8 @@ import datetime
 import pytz
 from AMDStrategy import Constants as const
 import math
+from AMDStrategy import AMDExecutionTracker as tracker
+import threading
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -30,12 +32,25 @@ class AMDBot:
     startingBars = []
     openBar = None
     processedEndOfDay = False
+    targetPrice = 0
+    executionTracker = None
+    quantity = 0
+    entryLimitforShort = 0.0
+    profitTargetForShort = 0.0
+    stopLossForShort = 0.0
+    entryLimitforLong = 0.0
+    profitTargetForLong = 0.0
+    stopLossForLong = 0.0
+    lock = threading.Lock()
+    timingCounter = 0
     
     def __init__(self, ib):
         self.ib = ib
 
     def setup(self):
         logger.info("Setting up AMD")
+        
+        self.executionTracker = tracker.AMDExecutionTracker()
         self.ib.reqIds(-1)
         
         self.symbol = "AMD"
@@ -47,17 +62,64 @@ class AMDBot:
         self.contract.secType = "STK"
         self.contract.exchange = "SMART"
         self.contract.currency = "USD"
-        self.ib.reqIds(-1)
+
+        self.reqId = gb.Globals.orderId;
         
         # Request Market Data
-        self.ib.reqRealTimeBars(0, self.contract, 5, "TRADES", 1, [])
+        self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
+        self.ib.reqIds(-1)
 
     def on_bar_update(self, reqId, bar, realtime):
         return
 
+    def updateStatus(self, orderID, status):
+        if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
+            return
+        
+        self.lock.acquire()
+        if self.executionTracker.isLongOrderExecuted():
+            if status == "Filled":
+                if orderID == self.executionTracker._longOrder._stopOrder.orderId:
+                    logger.info("AMD Stop order hit, creating response order.")
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
+                    
+                    self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
+                    
+                    self.ib.placeOrder(openOrder.orderId, self.contract, openOrder)
+                    self.ib.placeOrder(profitOrder.orderId, self.contract, profitOrder)
+                    self.ib.placeOrder(stopOrder.orderId, self.contract, stopOrder)
+                    
+                    self.update_globals_for_orders()
+                
+                if orderID == self.executionTracker._longOrder._profitOrder.orderId:
+                    logger.info("AMD profit hit, creating possibility for reverse order.")
+                    gb.Globals.getInstance().activeOrders.pop(self.symbol)
+                
+        if self.executionTracker.isShortOrderExecuted():
+            if status == "Filled": 
+                if orderID == self.executionTracker._shortOrder._stopOrder.orderId:
+                    logger.info("AMD Stop order hit, creating response order.")
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
+                    
+                    self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
+                    
+                    self.ib.placeOrder(openOrder.orderId, self.contract, openOrder)
+                    self.ib.placeOrder(profitOrder.orderId, self.contract, profitOrder)
+                    self.ib.placeOrder(stopOrder.orderId, self.contract, stopOrder)
+                
+                    self.update_globals_for_orders()
+                
+                if orderID == self.executionTracker._shortOrder._profitOrder.orderId:
+                    logger.info("AMD profit hit, creating possibility for reverse order.")
+                    gb.Globals.getInstance().activeOrders.pop(self.symbol)
+        self.lock.release()
+        
     #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
         self.check_end_of_day()
+        
+        if (reqId != self.reqId):
+            return
         
         if not self.startingBars or len(self.startingBars) < 12:
             bar = bars.Bar()
@@ -79,7 +141,13 @@ class AMDBot:
                 if (self.openBar.high - self.openBar.low < self.openBar.low * const.RISKMULTIPLIER * 3 ):
                     self.openBar.high = self.openBar.low + self.openBar.low * const.RISKMULTIPLIER * 3
 
-            if self.symbol not in gb.Globals.getInstance().currentOrders:
+            if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
+                if self.timingCounter % 60 == 0:
+                    logger.info("Both long and Short are done")
+                self.timingCounter += 1
+                return
+
+            if self.symbol not in gb.Globals.getInstance().activeOrders:
                 expectedHigh = self.openBar.high + self.openBar.high * const.RISKMULTIPLIER
                 expectedLow = self.openBar.low - self.openBar.low * const.RISKMULTIPLIER
                 logger.info("current high: {}".format( high))
@@ -88,53 +156,44 @@ class AMDBot:
                 logger.info("expected low: {}".format(expectedLow))
                 
                 risk = expectedHigh - expectedLow
-                quantity = math.ceil(const.CASHRISK / risk)
+                self.quantity = math.ceil(const.CASHRISK / risk)
                 
-                entryLimitForLong = expectedHigh
-                entryLimitforShort = expectedLow
-                profitTargetForLong = expectedHigh + risk * 3
-                profitTargetForShort = expectedLow - risk * 3
-                stopLossForLong = expectedLow
-                stopLossForShort = expectedHigh
+                self.entryLimitForLong = expectedHigh
+                self.entryLimitforShort = expectedLow
+                self.profitTargetForLong = expectedHigh + risk * 1
+                self.profitTargetForShort = expectedLow - risk * 1
+                self.stopLossForLong = expectedLow
+                self.stopLossForShort = expectedHigh
 
             
-                if high > expectedHigh:                    
-                    bracket = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "BUY", quantity, entryLimitForLong, profitTargetForLong, stopLossForLong)
+                if high > expectedHigh and not self.executionTracker.isLongOrderExecuted():                    
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     
-                    #Place Bracket Order
-                    for o in bracket:
-                        if (o.orderType == "STP"):
-                            logger.info("The stoploss order is: {}".format(o.orderId))
-                            
-                            gb.Globals.getInstance().orderResponses[o.orderId] = {}
-                            gb.Globals.getInstance().orderResponses[o.orderId]["orders"] = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "SELL", quantity, entryLimitforShort, profitTargetForShort, stopLossForShort)
-                            gb.Globals.getInstance().orderResponses[o.orderId]["contract"] = self.contract
-                            
-                        self.ib.placeOrder(o.orderId, self.contract,o)
+                    self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
                     
+                    self.ib.placeOrder(openOrder.orderId, self.contract, openOrder)
+                    self.ib.placeOrder(profitOrder.orderId, self.contract, profitOrder)
+                    self.ib.placeOrder(stopOrder.orderId, self.contract, stopOrder)
+
                     self.update_globals_for_orders()
                     
                     logger.info("Buy AMD")
-                elif low < expectedLow:
+                elif low < expectedLow and not self.executionTracker.isShortOrderExecuted():
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
                     
-                    bracket = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "SELL", quantity, entryLimitforShort, profitTargetForShort, stopLossForShort)
+                    self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
                     
-                    #Place Bracket Order
-                    for o in bracket:
-                        if (o.orderType == "STP"):
-                            logger.info("The stoploss order is: {}".format(o.orderId))
-                            gb.Globals.getInstance().orderResponses[o.orderId] = {}
-                            gb.Globals.getInstance().orderResponses[o.orderId]["orders"] = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "BUY", quantity, entryLimitForLong, profitTargetForLong, stopLossForLong)
-                            gb.Globals.getInstance().orderResponses[o.orderId]["contract"] = self.contract
-                            
-                        self.ib.placeOrder(o.orderId, self.contract, o)
-                        
+                    self.ib.placeOrder(openOrder.orderId, self.contract, openOrder)
+                    self.ib.placeOrder(profitOrder.orderId, self.contract, profitOrder)
+                    self.ib.placeOrder(stopOrder.orderId, self.contract, stopOrder)
+                    
                     self.update_globals_for_orders()
+                    
                     logger.info("Short AMD")
 
     def update_globals_for_orders(self):
-        gb.Globals.getInstance().currentOrders["AMD"] = gb.Globals.getInstance().orderId
-        gb.Globals.getInstance().orderId += 6       
+        gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().orderId
+        gb.Globals.getInstance().orderId += 3       
     
     def check_end_of_day(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
