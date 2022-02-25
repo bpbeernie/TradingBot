@@ -9,7 +9,6 @@ import pytz
 from AMDStrategy import Constants as const
 import math
 from AMDStrategy import AMDExecutionTracker as tracker
-import threading
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -41,7 +40,6 @@ class AMDBot:
     entryLimitforLong = 0.0
     profitTargetForLong = 0.0
     stopLossForLong = 0.0
-    lock = threading.Lock()
     timingCounter = 0
     
     def __init__(self, ib):
@@ -67,16 +65,17 @@ class AMDBot:
         
         # Request Market Data
         self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
-        self.ib.reqIds(-1)
+        gb.Globals.getInstance().orderId += 1    
 
     def on_bar_update(self, reqId, bar, realtime):
         return
+
+
 
     def updateStatus(self, orderID, status):
         if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
             return
         
-        self.lock.acquire()
         if self.executionTracker.isLongOrderExecuted():
             if status == "Filled":
                 if orderID == self.executionTracker._longOrder._stopOrder.orderId:
@@ -112,8 +111,7 @@ class AMDBot:
                 if orderID == self.executionTracker._shortOrder._profitOrder.orderId:
                     logger.info("AMD profit hit, creating possibility for reverse order.")
                     gb.Globals.getInstance().activeOrders.pop(self.symbol)
-        self.lock.release()
-        
+                    
     #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
         self.check_end_of_day()
