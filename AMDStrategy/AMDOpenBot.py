@@ -140,7 +140,7 @@ class AMDBot:
                     self.openBar.high = self.openBar.low + self.openBar.low * const.RISKMULTIPLIER * 3
 
             if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
-                if self.timingCounter % 60 == 0:
+                if self.timingCounter % 120 == 0:
                     logger.info("Both long and Short are done")
                 self.timingCounter += 1
                 return
@@ -158,8 +158,8 @@ class AMDBot:
                 
                 self.entryLimitForLong = expectedHigh
                 self.entryLimitforShort = expectedLow
-                self.profitTargetForLong = expectedHigh + risk * 1
-                self.profitTargetForShort = expectedLow - risk * 1
+                self.profitTargetForLong = expectedHigh + risk * 1 + const.EXTRACASH / self.quantity
+                self.profitTargetForShort = expectedLow - risk * 1 - const.EXTRACASH / self.quantity
                 self.stopLossForLong = expectedLow
                 self.stopLossForShort = expectedHigh
 

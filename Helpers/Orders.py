@@ -100,6 +100,8 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     logger.info(parent)
     logger.info(profitTargetOrder)
     logger.info(stopLossOrder)
+    logger.info("Quantity: " + str(stopLossOrder.totalQuantity))
+    logger.info("Stop loss Price: " + str(stopLossOrder.auxPrice))
 
     return parent, profitTargetOrder, stopLossOrder
 
