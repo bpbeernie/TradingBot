@@ -2,17 +2,17 @@
 from ibapi.contract import Contract
 from Helpers import Bars as bars, Orders as orders
 from Globals import Globals as gb
+from LODStrategy import Constants as const
 import logging
 import os
 import datetime
 import pytz
-from AMDStrategy import Constants as const
 import math
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-log_filename = "logs/amd.log"
+log_filename = "logs/lod.log"
 os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
 file_handler = logging.FileHandler(log_filename, mode="a", encoding=None, delay=False)
@@ -20,46 +20,60 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 #Bot Logic
-class AMDBot:
+class LODBounceBot:
     ib = None
-    contract = None
     barsize = 1
     bars = []
     reqId = 1
-    symbol = ""
     startingBars = []
     openBar = None
     processedEndOfDay = False
+    stockDictionary = {}
+    dataDictionary = {}
     
     def __init__(self, ib):
         self.ib = ib
 
     def setup(self):
-        logger.info("Setting up AMD")
+        logger.info("Setting up LOD")
+        self.ib.reqIds(-1)
         
-        self.symbol = "AMD"
         self.barsize = 1
         
         #Create our IB Contract Object
-        self.contract = Contract()
-        self.contract.symbol = self.symbol.upper()
-        self.contract.secType = "STK"
-        self.contract.exchange = "SMART"
-        self.contract.currency = "USD"
-        self.ib.reqIds(-1)
-        
-        # Request Market Data
-        self.reqId = gb.Globals.orderId
-        self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
-
+        for stock in const.STOCKS_TO_TRADE:
+            self.ib.reqIds(-1)
+            
+            contract = Contract()
+            contract.symbol = stock
+            contract.secType = "STK"
+            contract.exchange = "SMART"
+            contract.currency = "USD"
+            
+            self.ib.reqRealTimeBars(gb.Globals.orderId, contract, 5, "TRADES", 1, [])
+            self.stockDictionary[gb.Globals.orderId] = stock
 
     def on_bar_update(self, reqId, bar, realtime):
         return
 
     #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
-        if reqId != self.reqId:
+        #If update not intended for bot, return
+        if reqId not in self.stockDictionary:
             return
+        
+        if self.dataDictionary[self.stockDictionary[reqId]] is None:
+            self.dataDictionary[self.stockDictionary[reqId]] = []
+        
+        bar = bars.Bar()
+        bar.close = close
+        bar.date = time
+        bar.high = high
+        bar.low = low
+        bar.open = open_
+        bar.volume = volume
+        
+        self.dataDictionary[self.stockDictionary[reqId]].append(bar)
         
         self.check_end_of_day()
         
