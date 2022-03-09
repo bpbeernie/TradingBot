@@ -1,5 +1,17 @@
 from ibapi.contract import Contract
 from ibapi.order import *
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+log_filename = "logs/orders.log"
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)
+formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
+file_handler = logging.FileHandler(log_filename, mode="a", encoding=None, delay=False)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 #Bracet Order Setup
 def bracketOrder(symbol, parentOrderId, action, quantity, profitTarget, stopLoss):
@@ -53,7 +65,7 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     else:
         reverseAction = "BUY"
     
-    print("Reverse action is: " + reverseAction)
+    logger.info("Reverse action is: " + reverseAction)
     
     # Create Parent Order / Initial Entry
     parent = Order()
@@ -84,9 +96,14 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     stopLossOrder.auxPrice = round(stopLoss,2)
     stopLossOrder.ocaGroup = ocaGroup
     stopLossOrder.transmit = True
+    
+    logger.info(parent)
+    logger.info(profitTargetOrder)
+    logger.info(stopLossOrder)
+    logger.info("Quantity: " + str(stopLossOrder.totalQuantity))
+    logger.info("Stop loss Price: " + str(stopLossOrder.auxPrice))
 
-    bracketOrders = [parent, profitTargetOrder, stopLossOrder]
-    return bracketOrders
+    return parent, profitTargetOrder, stopLossOrder
 
 
 def closingOrder(symbol, orderId, quantity):    
@@ -109,4 +126,6 @@ def closingOrder(symbol, orderId, quantity):
     closingOrder.totalQuantity = quantity
     closingOrder.transmit = True
  
-    return closingOrder
+    logger.info(closingOrder)
+ 
+    return contract, closingOrder
