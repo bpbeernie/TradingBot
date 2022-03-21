@@ -1,5 +1,5 @@
 from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
-from AMDStrategy import AMDOpenBot
+from AMDStrategy import AMDOpenBot, AggressiveAMDOpenBot
 from IB import IBClient as ibClient
 import threading
 import time
@@ -32,7 +32,8 @@ def run():
     botList = []
     
     #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
-    botList.append(AMDOpenBot.AMDBot(ib)) 
+    #botList.append(AMDOpenBot.AMDBot(ib)) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib)) 
     ib.addBots(botList)
     
     for bot in botList:
