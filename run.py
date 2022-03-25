@@ -28,13 +28,17 @@ def run():
     ib_thread.start()
     
     time.sleep(1)
+    ib.reqIds(-1)
     
     botList = []
     
     #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
     #botList.append(AMDOpenBot.AMDBot(ib)) 
-    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib)) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AMD")) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
     ib.addBots(botList)
+
+    
     
     for bot in botList:
         bot.setup()

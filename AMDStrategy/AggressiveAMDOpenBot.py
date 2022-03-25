@@ -43,16 +43,15 @@ class AggressiveAMDBot:
     timingCounter = 0
     done = False
     
-    def __init__(self, ib):
+    def __init__(self, ib, stock):
         self.ib = ib
+        self.symbol = stock
 
     def setup(self):
-        logger.info("Setting up Aggressive AMD")
+        logger.info("Setting up Aggressive " + self.symbol)
         
         self.executionTracker = tracker.AMDExecutionTracker()
-        self.ib.reqIds(-1)
         
-        self.symbol = "AMD"
         self.barsize = 1
         
         #Create our IB Contract Object
@@ -62,11 +61,11 @@ class AggressiveAMDBot:
         self.contract.exchange = "SMART"
         self.contract.currency = "USD"
 
-        self.reqId = gb.Globals.orderId;
+        self.reqId = gb.Globals.getInstance().orderId
         
         # Request Market Data
         self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
-        gb.Globals.getInstance().orderId += 1    
+        gb.Globals.getInstance().orderId += 1
 
     def on_bar_update(self, reqId, bar, realtime):
         return
@@ -80,7 +79,7 @@ class AggressiveAMDBot:
         if self.executionTracker.isLongOrderExecuted():
             if status == "Filled":
                 if orderID == self.executionTracker._longOrder._stopOrder.orderId:
-                    logger.info("AMD Stop order hit, creating response order.")
+                    logger.info(self.symbol + " Stop order hit, creating response order.")
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
@@ -92,14 +91,14 @@ class AggressiveAMDBot:
                     self.update_globals_for_orders()
                 
                 if orderID == self.executionTracker._longOrder._profitOrder.orderId:
-                    logger.info("AMD long profit hit")
+                    logger.info(self.symbol + " long profit hit")
                     self.done = True
                     #gb.Globals.getInstance().activeOrders.pop(self.symbol)
                 
         if self.executionTracker.isShortOrderExecuted():
             if status == "Filled": 
                 if orderID == self.executionTracker._shortOrder._stopOrder.orderId:
-                    logger.info("AMD Stop order hit, creating response order.")
+                    logger.info(self.symbol + " Stop order hit, creating response order.")
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     
                     self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
@@ -111,7 +110,7 @@ class AggressiveAMDBot:
                     self.update_globals_for_orders()
                 
                 if orderID == self.executionTracker._shortOrder._profitOrder.orderId:
-                    logger.info("AMD short profit hit")
+                    logger.info(self.symbol + " short profit hit")
                     self.done = True
                     #gb.Globals.getInstance().activeOrders.pop(self.symbol)
                     
@@ -181,7 +180,7 @@ class AggressiveAMDBot:
 
                     self.update_globals_for_orders()
                     
-                    logger.info("Buy AMD")
+                    logger.info("Buy " + self.symbol)
                 elif low < expectedLow and not self.executionTracker.isShortOrderExecuted():
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
                     
@@ -193,7 +192,7 @@ class AggressiveAMDBot:
                     
                     self.update_globals_for_orders()
                     
-                    logger.info("Short AMD")
+                    logger.info("Short " + self.symbol)
 
     def update_globals_for_orders(self):
         gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().orderId
