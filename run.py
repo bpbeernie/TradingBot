@@ -7,6 +7,7 @@ import pytz
 import logging
 import Constants as const
 import os
+from LODStrategy import LODBounceBotBuilder
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -32,7 +33,8 @@ def run():
     botList = []
     
     #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
-    botList.append(AMDOpenBot.AMDBot(ib)) 
+    botList.extend(LODBounceBotBuilder.create_bots(ib))
+    #botList.append(AMDOpenBot.AMDBot(ib)) 
     ib.addBots(botList)
     
     for bot in botList:

@@ -65,7 +65,7 @@ class AMDBot:
         
         # Request Market Data
         self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
-        gb.Globals.getInstance().orderId += 1   
+        gb.Globals.getInstance().orderId += 1    
 
     def on_bar_update(self, reqId, bar, realtime):
         return
@@ -114,9 +114,6 @@ class AMDBot:
                     
     #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
-        if reqId != self.reqId:
-            return
-        
         self.check_end_of_day()
         
         if (reqId != self.reqId):
