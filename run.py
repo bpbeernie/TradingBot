@@ -1,5 +1,5 @@
 from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
-from AMDStrategy import AMDOpenBot
+from AMDStrategy import AMDOpenBot, AggressiveAMDOpenBot
 from IB import IBClient as ibClient
 import threading
 import time
@@ -29,13 +29,20 @@ def run():
     ib_thread.start()
     
     time.sleep(1)
+    ib.reqIds(-1)
     
     botList = []
     
     #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
-    botList.extend(LODBounceBotBuilder.create_bots(ib))
+
+
     #botList.append(AMDOpenBot.AMDBot(ib)) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AMD")) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
+    botList.extend(LODBounceBotBuilder.create_bots(ib))
     ib.addBots(botList)
+
+    
     
     for bot in botList:
         bot.setup()
