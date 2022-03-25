@@ -43,9 +43,9 @@ class AggressiveAMDBot:
     timingCounter = 0
     done = False
     
-    def __init__(self, ib, stock):
+    def __init__(self, ib, symbol):
         self.ib = ib
-        self.symbol = stock
+        self.symbol = symbol
 
     def setup(self):
         logger.info("Setting up Aggressive " + self.symbol)

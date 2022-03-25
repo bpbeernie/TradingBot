@@ -40,13 +40,12 @@ class LODBounceBot:
     done = False
     atrData = []
     
-    def __init__(self, ib, stock):
+    def __init__(self, ib, symbol):
         self.ib = ib
-        self.symbol = stock
+        self.symbol = symbol
 
     def setup(self):
         self.log("Setting up LOD")
-        self.ib.reqIds(-1)
         
         self.barsize = 1
         
@@ -57,7 +56,7 @@ class LODBounceBot:
         contract.exchange = "SMART"
         contract.currency = "USD"
         
-        self.reqId = gb.Globals.orderId
+        self.reqId = gb.Globals.getInstance().orderId
         
         self.ib.reqRealTimeBars(self.reqId, contract, 5, "TRADES", 1, [])
         gb.Globals.getInstance().orderId += 1  
@@ -72,8 +71,8 @@ class LODBounceBot:
     def on_bar_update(self, reqId, bar, realtime):
         return
     
-    def convertMinsToBarInterval(self, min):
-        return min*60/4/2
+    def convertMinsToBarInterval(self, specifiedMin):
+        return specifiedMin*60/4/2
     
     def generateATR(self):
         # for each 1 min interval
@@ -201,7 +200,7 @@ class LODBounceBot:
 
 
     def update_globals_for_orders(self):
-        gb.Globals.getInstance().currentOrders[self.stock] = gb.Globals.getInstance().orderId
+        gb.Globals.getInstance().currentOrders[self.symbol] = gb.Globals.getInstance().orderId
         gb.Globals.getInstance().orderId += 3       
 
     def check_time(self):
