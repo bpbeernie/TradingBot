@@ -22,32 +22,28 @@ logger.addHandler(file_handler)
 
 #Bot Logic
 class LODBounceBot:
-    ib = None
-    barsize = 1
-    bars = []
-    reqId = 1
-    startingBars = []
-    openBar = None
-    processedEndOfDay = False
-    data = []
-    
-    tenMinLOD = None
-    
-    twentyFiveMinHOD = 0
-    twentyMinLOD = 0
-    symbol = None
-    active = False
-    done = False
-    atrData = []
+
     
     def __init__(self, ib, symbol):
         self.ib = ib
         self.symbol = symbol
+        self.barsize = 1
+        self.reqId = gb.Globals.getInstance().getOrderId()
+        self.startingBars = []
+        self.openBar = None
+        self.processedEndOfDay = False
+        self.data = []
+    
+        self.tenMinLOD = None
+    
+        self.twentyFiveMinHOD = 0
+        self.twentyMinLOD = 0
+        self.active = False
+        self.done = False
+        self.atrData = []
 
     def setup(self):
         self.log("Setting up LOD")
-        
-        self.barsize = 1
         
         #Create our IB Contract Object
         contract = Contract()
@@ -56,10 +52,7 @@ class LODBounceBot:
         contract.exchange = "SMART"
         contract.currency = "USD"
         
-        self.reqId = gb.Globals.getInstance().orderId
-        
         self.ib.reqRealTimeBars(self.reqId, contract, 5, "TRADES", 1, [])
-        gb.Globals.getInstance().orderId += 1  
         
     def log(self, message, value=None):
         if value:
@@ -183,7 +176,7 @@ class LODBounceBot:
             # If this has been triggered
             if (self.active):
                 if bar.high >= openBid and self.twentyFiveMinHOD > target:
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "BUY", 
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", 
                                                                                  quantity, openBid, target, stopLoss)
                     
                     self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
@@ -201,7 +194,6 @@ class LODBounceBot:
 
     def update_globals_for_orders(self):
         gb.Globals.getInstance().currentOrders[self.symbol] = gb.Globals.getInstance().orderId
-        gb.Globals.getInstance().orderId += 3       
 
     def check_time(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))

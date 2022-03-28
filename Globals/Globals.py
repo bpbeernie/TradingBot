@@ -1,8 +1,8 @@
+import threading
+
 class Globals:
-    orderId = 1
-    activeOrders = {}
-    orderResponses = {}
-    
+    lock = threading.Lock()
+
     __instance = None
     @staticmethod 
     def getInstance():
@@ -16,3 +16,16 @@ class Globals:
             raise Exception("This class is a singleton!")
         else:
             Globals.__instance = self
+            self.orderId = 1
+            self.activeOrders = {}
+            self.orderResponses = {}
+            
+    def getOrderId(self, value=1):
+        self.lock.acquire()
+        
+        tempValue = self.orderId
+        self.orderId += value
+        
+        self.lock.release()
+        
+        return tempValue

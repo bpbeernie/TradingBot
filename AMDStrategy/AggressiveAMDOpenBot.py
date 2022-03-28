@@ -22,37 +22,33 @@ logger.addHandler(file_handler)
 
 #Bot Logic
 class AggressiveAMDBot:
-    ib = None
-    contract = None
-    barsize = 1
-    bars = []
-    reqId = 1
-    symbol = ""
-    startingBars = []
-    openBar = None
-    processedEndOfDay = False
-    targetPrice = 0
-    executionTracker = None
-    quantity = 0
-    entryLimitforShort = 0.0
-    profitTargetForShort = 0.0
-    stopLossForShort = 0.0
-    entryLimitforLong = 0.0
-    profitTargetForLong = 0.0
-    stopLossForLong = 0.0
-    timingCounter = 0
-    done = False
+
     
     def __init__(self, ib, symbol):
         self.ib = ib
         self.symbol = symbol
+        self.reqId = gb.Globals.getInstance().getOrderId()
+        self.startingBars = []
+        self.barsize = 1
+        self.openBar = None
+        self.processedEndOfDay = False
+        self.targetPrice = 0
+        self.executionTracker = None
+        self.quantity = 0
+        self.entryLimitforShort = 0.0
+        self.profitTargetForShort = 0.0
+        self.stopLossForShort = 0.0
+        self.entryLimitforLong = 0.0
+        self.profitTargetForLong = 0.0
+        self.stopLossForLong = 0.0
+        self.timingCounter = 0
+        self.done = False
 
     def setup(self):
         logger.info("Setting up Aggressive " + self.symbol)
         
         self.executionTracker = tracker.AMDExecutionTracker()
-        
-        self.barsize = 1
+
         
         #Create our IB Contract Object
         self.contract = Contract()
@@ -61,11 +57,12 @@ class AggressiveAMDBot:
         self.contract.exchange = "SMART"
         self.contract.currency = "USD"
 
-        self.reqId = gb.Globals.getInstance().orderId
+
         
         # Request Market Data
+        print("Start: " + self.symbol + str(self.reqId))
         self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
-        gb.Globals.getInstance().orderId += 1
+        print("Start: " + self.symbol + str(self.reqId))
 
     def on_bar_update(self, reqId, bar, realtime):
         return
@@ -80,7 +77,7 @@ class AggressiveAMDBot:
             if status == "Filled":
                 if orderID == self.executionTracker._longOrder._stopOrder.orderId:
                     logger.info(self.symbol + " Stop order hit, creating response order.")
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
                     
@@ -99,7 +96,7 @@ class AggressiveAMDBot:
             if status == "Filled": 
                 if orderID == self.executionTracker._shortOrder._stopOrder.orderId:
                     logger.info(self.symbol + " Stop order hit, creating response order.")
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId+3, "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     
                     self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
                     
@@ -133,7 +130,7 @@ class AggressiveAMDBot:
             bar.open = open_
             bar.volume = volume
             self.startingBars.append(bar)
-            logger.info("Creating open bar")
+            logger.info(self.symbol + ": Creating open bar")
         else:
             if self.openBar is None:
                 self.openBar = bars.Bar()
@@ -153,10 +150,10 @@ class AggressiveAMDBot:
             if self.symbol not in gb.Globals.getInstance().activeOrders:
                 expectedHigh = self.openBar.high + self.openBar.high * const.RISKMULTIPLIER
                 expectedLow = self.openBar.low - self.openBar.low * const.RISKMULTIPLIER
-                logger.info("current high: {}".format( high))
-                logger.info("expected high: {}".format(expectedHigh))
-                logger.info("current low: {}".format(low))
-                logger.info("expected low: {}".format(expectedLow))
+                logger.info(self.symbol + ": current high: {}".format( high))
+                logger.info(self.symbol + ": expected high: {}".format(expectedHigh))
+                logger.info(self.symbol + ": current low: {}".format(low))
+                logger.info(self.symbol + ": expected low: {}".format(expectedLow))
                 
                 risk = expectedHigh - expectedLow
                 self.quantity = math.ceil(const.CASHRISK / risk)
@@ -170,7 +167,7 @@ class AggressiveAMDBot:
 
             
                 if high > expectedHigh and not self.executionTracker.isLongOrderExecuted():                    
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     
                     self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
                     
@@ -182,7 +179,7 @@ class AggressiveAMDBot:
                     
                     logger.info("Buy " + self.symbol)
                 elif low < expectedLow and not self.executionTracker.isShortOrderExecuted():
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
                     
@@ -195,8 +192,7 @@ class AggressiveAMDBot:
                     logger.info("Short " + self.symbol)
 
     def update_globals_for_orders(self):
-        gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().orderId
-        gb.Globals.getInstance().orderId += 3       
+        gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().getOrderId(3)
     
     def check_end_of_day(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
