@@ -199,10 +199,10 @@ class AggressiveAMDBot:
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
         today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
         
-        self.lock.acquire()
-        if not self.processedEndOfDay and now > today1259pm:
+        AggressiveAMDBot.lock.acquire()
+        if not AggressiveAMDBot.processedEndOfDay and now > today1259pm:
             logger.info("Processed EOD")
-            self.processedEndOfDay = True
+            AggressiveAMDBot.processedEndOfDay = True
             self.ib.reqGlobalCancel()
             self.ib.reqAccountUpdates(True, "1")
-        self.lock.release()
+        AggressiveAMDBot.lock.release()

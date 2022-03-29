@@ -21,11 +21,11 @@ class Globals:
             self.orderResponses = {}
             
     def getOrderId(self, value=1):
-        self.lock.acquire()
+        Globals.lock.acquire()
         
         tempValue = self.orderId
         self.orderId += value
         
-        self.lock.release()
+        Globals.lock.release()
         
         return tempValue
