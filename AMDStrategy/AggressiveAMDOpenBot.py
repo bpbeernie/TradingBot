@@ -9,6 +9,7 @@ import pytz
 from AMDStrategy import Constants as const
 import math
 from AMDStrategy import AMDExecutionTracker as tracker
+import threading
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -22,7 +23,8 @@ logger.addHandler(file_handler)
 
 #Bot Logic
 class AggressiveAMDBot:
-
+    processedEndOfDay = False
+    lock = threading.Lock()
     
     def __init__(self, ib, symbol):
         self.ib = ib
@@ -31,7 +33,6 @@ class AggressiveAMDBot:
         self.startingBars = []
         self.barsize = 1
         self.openBar = None
-        self.processedEndOfDay = False
         self.targetPrice = 0
         self.executionTracker = None
         self.quantity = 0
@@ -197,8 +198,11 @@ class AggressiveAMDBot:
     def check_end_of_day(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
         today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
+        
+        self.lock.acquire()
         if not self.processedEndOfDay and now > today1259pm:
             logger.info("Processed EOD")
             self.processedEndOfDay = True
             self.ib.reqGlobalCancel()
             self.ib.reqAccountUpdates(True, "1")
+        self.lock.release()
