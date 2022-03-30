@@ -24,6 +24,7 @@ class AMDExecutionTracker:
         return self._shortOrder is not None
     
 class OrderSet:
-    _openOrder = None;
-    _stopOrder = None;
-    _profitOrder = None;
+    def __init__(self):
+        self._openOrder = None;
+        self._stopOrder = None;
+        self._profitOrder = None;

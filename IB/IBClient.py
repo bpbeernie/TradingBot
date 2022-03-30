@@ -1,13 +1,10 @@
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from Globals import Globals as gb
-import threading
 from Helpers import Orders as ord
 
 #Class for Interactive Brokers Connection
 class IBApi(EWrapper,EClient):
-    _botList = []
-    lock = threading.Lock()
     
     def __init__(self):
         EClient.__init__(self, self)
