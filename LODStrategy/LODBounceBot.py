@@ -61,8 +61,11 @@ class LODBounceBot:
             logger.info(self.symbol + ": " + str(message))
 
 
+    def updateStatus(self, orderID, status):
+        pass
+    
     def on_bar_update(self, reqId, bar, realtime):
-        return
+        pass
     
     def convertMinsToBarInterval(self, specifiedMin):
         return specifiedMin*60/4/2
