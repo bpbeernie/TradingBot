@@ -149,8 +149,9 @@ class AggressiveAMDBot:
                 return
 
             if self.symbol not in gb.Globals.getInstance().activeOrders:
-                expectedHigh = self.openBar.high + self.openBar.high * const.RISKMULTIPLIER
-                expectedLow = self.openBar.low - self.openBar.low * const.RISKMULTIPLIER
+                openBarDiff = self.openBar.high - self.openBar.low
+                expectedHigh = self.openBar.high + openBarDiff * const.RISKMULTIPLIER
+                expectedLow = self.openBar.low - openBarDiff * const.RISKMULTIPLIER
                 logger.info(self.symbol + ": current high: {}".format( high))
                 logger.info(self.symbol + ": expected high: {}".format(expectedHigh))
                 logger.info(self.symbol + ": current low: {}".format(low))
