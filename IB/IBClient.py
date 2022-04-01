@@ -6,8 +6,10 @@ from Helpers import Orders as ord
 #Class for Interactive Brokers Connection
 class IBApi(EWrapper,EClient):
     
+    
     def __init__(self):
         EClient.__init__(self, self)
+        self.closedPositions = []
         
     def addBots(self, bots):
         self._botList = bots
@@ -63,9 +65,12 @@ class IBApi(EWrapper,EClient):
                                 marketValue,averageCost, unrealizedPNL,
                                 realizedPNL, accountName)
         
-        print("Closing all Positions!")
-        gb.Globals.getInstance().orderResponses = {}
-        closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().orderId, position)
-        self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
-        gb.Globals.getInstance().orderId +=1
+        print("Received Portfolio Update: " + contract.symbol + " : " + str(position))
+        
+        if position != 0 and contract.symbol not in self.closedPositions:
+            print("Closing position for: " + contract.symbol)
+            self.closedPositions.append(contract.symbol)
+            gb.Globals.getInstance().orderResponses = {}
+            closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
+            self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
 

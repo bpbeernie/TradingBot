@@ -123,7 +123,7 @@ def closingOrder(symbol, orderId, quantity):
     closingOrder.orderId = orderId
     closingOrder.orderType = "MKT"
     closingOrder.action = action
-    closingOrder.totalQuantity = quantity
+    closingOrder.totalQuantity = abs(quantity)
     closingOrder.transmit = True
  
     logger.info(closingOrder)
