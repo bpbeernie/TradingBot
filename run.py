@@ -1,13 +1,20 @@
 from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
 from AMDStrategy import AMDOpenBot, AggressiveAMDOpenBot
+from LODStrategy import LODBounceBotBuilder
 from IB import IBClient as ibClient
 import threading
 import time
-import pytz
 import logging
 import Constants as const
 import os
-from LODStrategy import LODBounceBotBuilder
+
+if 'ENV' in os.environ.keys():
+    if os.environ['ENV'] == const.PROD:
+        from Config.production import *
+    elif os.environ['ENV'] == const.DEV:
+        from Config.development import *
+else:
+    from Config.development import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -22,8 +29,8 @@ logger.addHandler(file_handler)
 def run():
     #Connect to IB on init
     ib = ibClient.IBApi()
-    ib.connect(const.LOCALIP, const.PORT, 1)
-    logger.info("Connected at port {}".format(const.PORT))
+    ib.connect(const.LOCALIP, PORT, 1)
+    logger.info("Connected at port {}".format(PORT))
     
     ib_thread = threading.Thread(target=run_loop, args=(ib,), daemon=True)
     ib_thread.start()
@@ -32,18 +39,18 @@ def run():
     ib.reqIds(-1)
     
     botList = []
-    
+
     #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
-
-
     #botList.append(AMDOpenBot.AMDBot(ib)) 
+    
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AMD")) 
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
-    botList.extend(LODBounceBotBuilder.create_bots(ib))
+    
+    if 'ENV' not in os.environ.keys() or os.environ['ENV'] == const.DEV:
+        botList.extend(LODBounceBotBuilder.create_bots(ib))
+    
     ib.addBots(botList)
 
-    
-    
     for bot in botList:
         bot.setup()
 
