@@ -23,7 +23,6 @@ logger.addHandler(file_handler)
 #Bot Logic
 class LODBounceBot:
 
-    
     def __init__(self, ib, symbol):
         self.ib = ib
         self.symbol = symbol
@@ -68,7 +67,7 @@ class LODBounceBot:
         pass
     
     def convertMinsToBarInterval(self, specifiedMin):
-        return specifiedMin*60/4/2
+        return specifiedMin*const.BARS_PER_MIN
     
     def generateATR(self):
         # for each 1 min interval
@@ -122,8 +121,8 @@ class LODBounceBot:
         self.data.append(bar)
         intervalsPassed = len(self.data)
         
-        if (intervalsPassed % 15 == 0):
-            startingInterval = intervalsPassed - 15
+        if (intervalsPassed % const.BARS_PER_MIN == 0):
+            startingInterval = intervalsPassed - const.BARS_PER_MIN
             minArray = self.data[startingInterval:]
             atrBar = ATRBar()
             atrBar.high = min(o.high for o in minArray)
