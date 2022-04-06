@@ -7,7 +7,11 @@ from AMDStrategy.AggressiveAMDOpenBot import AggressiveAMDBot
 from random import seed
 from random import uniform
 from random import randint
-from Test.TestData import *
+from Test.Data.TestData import *
+from Globals import Globals as gb
+from freezegun import freeze_time
+import datetime
+import pytz
 
 
 class TestAMDBot(unittest.TestCase):
@@ -40,9 +44,26 @@ class TestAMDBot(unittest.TestCase):
         self.assertEqual(round(self.bot.profitTargetForLong, 2), 113.29, "Test Profit Target Long")
         self.assertEqual(round(self.bot.profitTargetForShort, 2), 108.1, "Test Profit Target Short")
         
-    def test_entry_triggers_StopLosses(self):
+    def test_entry_triggers_stopLosses(self):
         self.assertEqual(round(self.bot.stopLossForLong, 2), 110.32, "Test Stop Loss Long")
         self.assertEqual(round(self.bot.stopLossForShort, 2), 111.07, "Test Stop Loss Short")
+
+    def test_check_global_orders(self):
+        self.assertTrue("AMD" in gb.Globals.getInstance().activeOrders.keys(), "Added to globals")
+        
+
+    @freeze_time("2022-04-05 14:21:34", tz_offset=-8)
+    def test_processed_end_of_day_pass(self):
+        self.bot.check_end_of_day()
+        
+        self.assertTrue(self.bot.processedEndOfDay, "Added to globals")
+
+
+    def test_check_long_executed(self):
+        self.assertTrue(self.bot.executionTracker.isLongOrderExecuted(), "Long has been executed")
+        
+        
+
 
     @classmethod
     def generateBars(self, _open, high, low, _close):
