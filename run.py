@@ -7,6 +7,8 @@ import time
 import logging
 import Constants as const
 import os
+from IBTest import IBTestClient
+from IBTest.IBTestClient import IBTestApi
 
 if 'ENV' in os.environ.keys():
     if os.environ['ENV'] == const.PROD:
@@ -46,8 +48,8 @@ def run():
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AMD")) 
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
     
-    if 'ENV' not in os.environ.keys() or os.environ['ENV'] == const.DEV:
-        botList.extend(LODBounceBotBuilder.create_bots(ib))
+    testIB = IBTestApi(ib)
+    botList.extend(LODBounceBotBuilder.create_bots(testIB))
     
     ib.addBots(botList)
 
