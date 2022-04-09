@@ -138,10 +138,6 @@ class AggressiveAMDBot:
                 self.openBar.low = min(o.low for o in self.startingBars)
                 self.openBar.high = max(o.high for o in self.startingBars)
                 
-                #If opening candle too small, artifically increment it.
-                if (self.openBar.high - self.openBar.low < self.openBar.low * const.RISKMULTIPLIER * 3 ):
-                    self.openBar.high = self.openBar.low + self.openBar.low * const.RISKMULTIPLIER * 3
-
             if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
                 if self.timingCounter % 120 == 0:
                     logger.info("Both long and Short are done")
