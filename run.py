@@ -10,12 +10,12 @@ import os
 from IBTest import IBTestClient
 from IBTest.IBTestClient import IBTestApi
 
-if 'ENV' in os.environ.keys():
+try:
     if os.environ['ENV'] == const.PROD:
         from Config.production import *
     elif os.environ['ENV'] == const.DEV:
         from Config.development import *
-else:
+except KeyError:
     from Config.development import *
 
 logger = logging.getLogger(__name__)
