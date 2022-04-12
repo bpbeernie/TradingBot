@@ -32,6 +32,11 @@ class IBApi(EWrapper,EClient):
     def historicalDataEnd(self, reqId, start, end):
         print("historicalDataEnd")
         print(reqId)
+        try:
+            for bot in self._botList:
+                bot.historicalDataEnd(reqId)
+        except Exception as e:
+            print(e)
     # Get next order id we can use
     def nextValidId(self, nextorderId):
         gb.Globals.getInstance().orderId = nextorderId
