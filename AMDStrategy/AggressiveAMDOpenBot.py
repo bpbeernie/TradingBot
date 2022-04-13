@@ -1,15 +1,10 @@
-#Imports
-from ibapi.contract import Contract
 from Helpers import Bars as bars, Orders as orders
 from Globals import Globals as gb
 import logging
 import os
-import datetime
-import pytz
 from AMDStrategy import Constants as const
 import math
-from AMDStrategy import AMDExecutionTracker as tracker
-import threading
+from AMDStrategy import OpenBotBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -21,55 +16,8 @@ file_handler = logging.FileHandler(log_filename, mode="a", encoding=None, delay=
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-#Bot Logic
-class AggressiveAMDBot:
-    processedEndOfDay = False
-    lock = threading.Lock()
+class AggressiveAMDBot(OpenBotBase.OpenBotBase):
     
-    def __init__(self, ib, symbol):
-        self.ib = ib
-        self.symbol = symbol
-        self.reqId = gb.Globals.getInstance().getOrderId()
-        self.startingBars = []
-        self.barsize = 1
-        self.openBar = None
-        self.targetPrice = 0
-        self.executionTracker = None
-        self.quantity = 0
-        self.entryLimitforShort = 0.0
-        self.profitTargetForShort = 0.0
-        self.stopLossForShort = 0.0
-        self.entryLimitforLong = 0.0
-        self.profitTargetForLong = 0.0
-        self.stopLossForLong = 0.0
-        self.timingCounter = 0
-        self.done = False
-
-    def setup(self):
-        logger.info("Setting up Aggressive " + self.symbol)
-        
-        self.executionTracker = tracker.AMDExecutionTracker()
-
-        
-        #Create our IB Contract Object
-        self.contract = Contract()
-        self.contract.symbol = self.symbol.upper()
-        self.contract.secType = "STK"
-        self.contract.exchange = "SMART"
-        self.contract.currency = "USD"
-
-
-        
-        # Request Market Data
-        print("Start: " + self.symbol + str(self.reqId))
-        self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
-        print("Start: " + self.symbol + str(self.reqId))
-
-    def on_bar_update(self, reqId, bar, realtime):
-        return
-
-
-
     def updateStatus(self, orderID, status):
         if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
             return
@@ -78,7 +26,7 @@ class AggressiveAMDBot:
             if status == "Filled":
                 if orderID == self.executionTracker._longOrder._stopOrder.orderId:
                     logger.info(self.symbol + " Stop order hit, creating response order.")
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitForShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
                     
@@ -91,7 +39,6 @@ class AggressiveAMDBot:
                 if orderID == self.executionTracker._longOrder._profitOrder.orderId:
                     logger.info(self.symbol + " long profit hit")
                     self.done = True
-                    #gb.Globals.getInstance().activeOrders.pop(self.symbol)
                 
         if self.executionTracker.isShortOrderExecuted():
             if status == "Filled": 
@@ -110,9 +57,7 @@ class AggressiveAMDBot:
                 if orderID == self.executionTracker._shortOrder._profitOrder.orderId:
                     logger.info(self.symbol + " short profit hit")
                     self.done = True
-                    #gb.Globals.getInstance().activeOrders.pop(self.symbol)
                     
-    #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
         if self.done:
             return
@@ -157,7 +102,7 @@ class AggressiveAMDBot:
                 self.quantity = math.ceil(const.CASHRISK / risk)
                 
                 self.entryLimitForLong = expectedHigh
-                self.entryLimitforShort = expectedLow
+                self.entryLimitForShort = expectedLow
                 self.profitTargetForLong = expectedHigh + risk * 3
                 self.profitTargetForShort = expectedLow - risk * 3
                 self.stopLossForLong = expectedLow
@@ -177,7 +122,7 @@ class AggressiveAMDBot:
                     
                     logger.info("Buy " + self.symbol)
                 elif low < expectedLow and not self.executionTracker.isShortOrderExecuted():
-                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitforShort, self.profitTargetForShort, self.stopLossForShort)
+                    openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitForShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
                     
@@ -188,18 +133,3 @@ class AggressiveAMDBot:
                     self.update_globals_for_orders()
                     
                     logger.info("Short " + self.symbol)
-
-    def update_globals_for_orders(self):
-        gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().getOrderId(3)
-    
-    def check_end_of_day(self):
-        now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
-        today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
-        
-        AggressiveAMDBot.lock.acquire()
-        if not AggressiveAMDBot.processedEndOfDay and now > today1259pm:
-            logger.info("Processed EOD")
-            AggressiveAMDBot.processedEndOfDay = True
-            self.ib.reqGlobalCancel()
-            self.ib.reqAccountUpdates(True, "1")
-        AggressiveAMDBot.lock.release()

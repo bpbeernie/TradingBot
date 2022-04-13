@@ -1,5 +1,5 @@
 from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
-from AMDStrategy import AMDOpenBot, AggressiveAMDOpenBot
+from AMDStrategy import AggressiveAMDOpenBot, ReverseAMDOpenBot
 from LODStrategy import LODBounceBotBuilder
 from IB import IBClient as ibClient
 import threading
