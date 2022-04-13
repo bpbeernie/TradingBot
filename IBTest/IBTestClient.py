@@ -14,11 +14,46 @@ class IBTestApi(IBApi):
         
     def placeOrder(self, orderId , contract, order):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
-        print("Order Placed for " + contract.symbol + " at " + str(now))
-        print("Order ID: " + str(orderId))
-        print("Action: " + str(order.action))
-        print("Quantity: " + str(order.totalQuantity))
-        print("Limit Price: " + str(order.lmtPrice))
-        print("Parent ID: " + str(order.parentOrderId))
-        print("Aux Price: " + str(order.auxPrice))
-        print("Transmit: " + str(order.transmit))
+        
+        try:
+            print("Order Placed for " + contract.symbol + " at " + str(now))
+        except AttributeError:
+            pass
+        
+        try:
+            print("Order ID: " + str(orderId))
+        except AttributeError:
+            pass
+        
+        try:
+            print("Action: " + str(order.action))
+        except AttributeError:
+            pass
+        
+        try:
+            print("Quantity: " + str(order.totalQuantity))
+        except AttributeError:
+            pass
+        
+        try:
+            print("Limit Price: " + str(order.lmtPrice))
+        except AttributeError:
+            pass
+        
+        try:
+            print("Parent ID: " + str(order.parentOrderId))
+        except AttributeError:
+            pass
+        
+        try:
+            print("Aux Price: " + str(order.auxPrice))
+        except AttributeError:
+            pass
+            
+        try:
+            print("Transmit: " + str(order.transmit))
+        except AttributeError:
+            pass
+        print(" ======================= ")
+
+        
