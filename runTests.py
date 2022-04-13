@@ -1,6 +1,3 @@
-from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
-from AMDStrategy import AMDOpenBot, AggressiveAMDOpenBot
-from LODStrategy import LODBounceBotBuilder
 from TestingStrategy import TestStrategyBotBuilder
 from IB import IBClient as ibClient
 import threading
@@ -8,9 +5,6 @@ import time
 import logging
 import Constants as const
 import os
-from IBTest import IBTestClient
-from IBTest.IBTestClient import IBTestApi
-import TestingStrategy
 
 try:
     if os.environ['ENV'] == const.PROD:
