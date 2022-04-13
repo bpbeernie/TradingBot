@@ -159,10 +159,11 @@ class TestBot:
             if not done:
                 if self.shortEntryRunning and not self.shortEntryDone:
                     remaining =  (self.entryLimitforShort - self.data[date][-1].close) / (self.entryLimitforShort - self.profitTargetForShort)
+                    result += remaining * 3
                     
                 if self.longEntryRunning and not self.longEntryDone:
                     remaining = (self.data[date][-1].close - self.entryLimitforLong) /  (self.profitTargetForLong - self.entryLimitforLong)
-                result += remaining * 3
+                    result += remaining * 3
             
             self.finalResults.setdefault(datetime.datetime.strptime(date, '%Y-%m-%d'), result) 
             self.reset()
