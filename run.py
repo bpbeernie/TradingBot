@@ -45,8 +45,9 @@ def run():
     #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
     #botList.append(AMDOpenBot.AMDBot(ib)) 
     
-    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AMD")) 
-    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "FB")) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "PFE")) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "TWTR")) 
     
     testIB = IBTestApi(ib)
     botList.extend(LODBounceBotBuilder.create_bots(testIB))
