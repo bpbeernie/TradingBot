@@ -9,6 +9,7 @@ import datetime
 import pytz
 import math
 from Helpers.ATRBars import ATRBar
+from AMDStrategy import AMDExecutionTracker as tracker
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -23,7 +24,6 @@ logger.addHandler(file_handler)
 #Bot Logic
 class LODBounceBot:
 
-    
     def __init__(self, ib, symbol):
         self.ib = ib
         self.symbol = symbol
@@ -41,18 +41,20 @@ class LODBounceBot:
         self.active = False
         self.done = False
         self.atrData = []
+        self.executionTracker = tracker.AMDExecutionTracker()
 
     def setup(self):
         self.log("Setting up LOD")
         
         #Create our IB Contract Object
-        contract = Contract()
-        contract.symbol = self.symbol
-        contract.secType = "STK"
-        contract.exchange = "SMART"
-        contract.currency = "USD"
+        self.contract = Contract()
+        self.contract.symbol = self.symbol.upper()
+        self.contract.secType = "STK"
+        self.contract.exchange = "SMART"
+        self.contract.currency = "USD"
+        self.contract.primaryExchange = "ARCA"
         
-        self.ib.reqRealTimeBars(self.reqId, contract, 5, "TRADES", 1, [])
+        self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
         
     def log(self, message, value=None):
         if value:
@@ -68,7 +70,7 @@ class LODBounceBot:
         pass
     
     def convertMinsToBarInterval(self, specifiedMin):
-        return specifiedMin*60/4/2
+        return specifiedMin*const.BARS_PER_MIN
     
     def generateATR(self):
         # for each 1 min interval
@@ -93,20 +95,17 @@ class LODBounceBot:
                 prevATRValue = currATRValue / 4
                 
             prevATRValue = (prevATRValue *13 + currATRValue) / 14
-            self.log("For minute " + str(i) + " we calculate atr value: ", prevATRValue)
             i += 1
             
         self.log("For minute " + str(i) + " we calculate atr value: ", prevATRValue)
         return round(prevATRValue, 2)
 
-            
 
-    #Pass realtime bar data back to our bot object
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
-        self.check_time()
-        
         if (self.done):
             return
+        
+        self.check_time()
         
         if (reqId != self.reqId):
             return
@@ -122,8 +121,8 @@ class LODBounceBot:
         self.data.append(bar)
         intervalsPassed = len(self.data)
         
-        if (intervalsPassed % 15 == 0):
-            startingInterval = intervalsPassed - 15
+        if (intervalsPassed % const.BARS_PER_MIN == 0):
+            startingInterval = intervalsPassed - const.BARS_PER_MIN
             minArray = self.data[startingInterval:]
             atrBar = ATRBar()
             atrBar.high = min(o.high for o in minArray)
@@ -148,16 +147,15 @@ class LODBounceBot:
         
         
         if intervalsPassed >= self.convertMinsToBarInterval(25):
-            self.log("25 min interval hit!")
             
             atr = self.generateATR()
             atrFactor = 2
             trigger = max(round(1/3.25*atr*atrFactor,2), 0.02) + self.tenMinLOD
-            openBid = (trigger-self.tenMinLOD) + trigger
+            openBid = round((trigger-self.tenMinLOD) + trigger, 2)
             stopLoss = round(self.tenMinLOD-(trigger-self.tenMinLOD)*1.25, 2)
             quantity = math.ceil(const.CASHRISK / (openBid-stopLoss))
             
-            target = (((openBid-stopLoss)*quantity*1+quantity*0.01*4)/quantity) + openBid
+            target = round((((openBid-stopLoss)*quantity*1+quantity*0.01*4)/quantity) + openBid, 2)
             
             self.log("ATR: ", atr)
             self.log("trigger: ", trigger)
@@ -196,7 +194,7 @@ class LODBounceBot:
 
 
     def update_globals_for_orders(self):
-        gb.Globals.getInstance().currentOrders[self.symbol] = gb.Globals.getInstance().orderId
+        gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().getOrderId()
 
     def check_time(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))

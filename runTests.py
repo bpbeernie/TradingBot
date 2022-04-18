@@ -1,14 +1,10 @@
-from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
-from AMDStrategy import AggressiveAMDOpenBot, ReverseAMDOpenBot
-from LODStrategy import LODBounceBotBuilder
+from TestingStrategy import TestStrategyBotBuilder
 from IB import IBClient as ibClient
 import threading
 import time
 import logging
 import Constants as const
 import os
-from IBTest import IBTestClient
-from IBTest.IBTestClient import IBTestApi
 
 try:
     if os.environ['ENV'] == const.PROD:
@@ -42,14 +38,7 @@ def run():
     
     botList = []
 
-    #botList.append(InteractiveBrokersPythonBot.Bot(ib)) 
-    #botList.append(AMDOpenBot.AMDBot(ib)) 
-    
-    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AMD")) 
-    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
-    
-    testIB = IBTestApi(ib)
-    botList.extend(LODBounceBotBuilder.create_bots(testIB))
+    botList.extend(TestStrategyBotBuilder.create_bots(ib)) 
     
     ib.addBots(botList)
 
