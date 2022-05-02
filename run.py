@@ -46,7 +46,7 @@ def run():
     #botList.append(AMDOpenBot.AMDBot(ib)) 
     
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "FB")) 
-    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "PFE")) 
+    botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "ORCL")) 
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "TWTR")) 
     
     testIB = IBTestApi(ib)
