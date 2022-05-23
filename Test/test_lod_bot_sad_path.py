@@ -34,7 +34,7 @@ class TestLODSadBot(unittest.TestCase):
             cls.bot.on_realtime_update(requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
             
     def test_open_order(self):
-        self.assertFalse(self.bot.executionTracker.isLongOrderExecuted(), "Not executed")
+        self.assertFalse(self.bot.executionTracker.isLongOrderSent(), "Not executed")
             
 
     def test_done(self):

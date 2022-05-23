@@ -53,7 +53,7 @@ class TestAMDHappyBot(unittest.TestCase):
 
 
     def test_check_short_executed(self):
-        self.assertTrue(self.bot.executionTracker.isShortOrderExecuted(), "Short has been executed")
+        self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short has been executed")
         
         
 

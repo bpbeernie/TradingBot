@@ -2,6 +2,8 @@ class AMDExecutionTracker:
     def __init__(self):
         self._shortOrder = None
         self._longOrder = None
+        self._shortOrderFilled = False
+        self._longOrderFilled = False
         
     def setShort(self, openOrder, profitOrder, stopOrder):
         self._shortOrder = OrderSet()
@@ -17,11 +19,17 @@ class AMDExecutionTracker:
         self._longOrder._profitOrder = profitOrder
         self._longOrder._stopOrder = stopOrder
         
-    def isLongOrderExecuted(self):
+    def isLongOrderSent(self):
         return self._longOrder is not None
     
-    def isShortOrderExecuted(self):
+    def isShortOrderSent(self):
         return self._shortOrder is not None
+    
+    def isLongOrderFilled(self):
+        return self._longOrderFilled
+    
+    def isShortOrderFilled(self):
+        return self._shortOrderFilled
     
 class OrderSet:
     def __init__(self):
