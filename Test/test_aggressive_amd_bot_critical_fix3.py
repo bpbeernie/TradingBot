@@ -47,6 +47,9 @@ class TestAggressiveAMDHappyLongBot(unittest.TestCase):
         
             if cls.tracker.isShortOrderSent() and not cls.tracker.isShortOrderFilled():
                 cls.bot.updateStatus(cls.tracker.getShortOpenOrderID(), "Filled")
+                cls.bot.updateStatus(cls.tracker.getShortOpenOrderID(), "Filled")
+                cls.bot.updateStatus(cls.tracker.getShortOpenOrderID(), "Filled")
+                cls.bot.updateStatus(cls.tracker.getShortOpenOrderID(), "Filled")
                 
             if cls.tracker.isShortOrderFilled() and not shortDone:
                 if bar["Low"] <= cls.tracker.getShortProfitTarget():
