@@ -25,11 +25,11 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
         
         if self.executionTracker.isLongOrderSent():
             if status == "Filled":
-                if orderID == self.executionTracker._longOrder._openOrder.orderId:
+                if orderID == self.executionTracker._longOrder._openOrder.orderId and not self.executionTracker.isLongOrderFilled():
                     logger.info(self.symbol + " Long entry filled.")
                     self.executionTracker._longOrderFilled = True
                 
-                if orderID == self.executionTracker._longOrder._stopOrder.orderId:
+                if orderID == self.executionTracker._longOrder._stopOrder.orderId and not self.executionTracker.isShortOrderSent():
                     logger.info(self.symbol + " Stop order hit, creating response order.")
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitForShort, self.profitTargetForShort, self.stopLossForShort)
                     
@@ -47,11 +47,11 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
                 
         if self.executionTracker.isShortOrderSent():
             if status == "Filled": 
-                if orderID == self.executionTracker._shortOrder._openOrder.orderId:
+                if orderID == self.executionTracker._shortOrder._openOrder.orderId and not self.executionTracker.isShortOrderFilled():
                     logger.info(self.symbol + " Short entry filled.")
                     self.executionTracker._shortOrderFilled = True
                 
-                if orderID == self.executionTracker._shortOrder._stopOrder.orderId:
+                if orderID == self.executionTracker._shortOrder._stopOrder.orderId and not self.executionTracker.isLongOrderSent():
                     logger.info(self.symbol + " Stop order hit, creating response order.")
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     

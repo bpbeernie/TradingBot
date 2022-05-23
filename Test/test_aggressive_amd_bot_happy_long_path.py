@@ -37,17 +37,18 @@ class TestAggressiveAMDHappyLongBot(unittest.TestCase):
                 except EOFError:
                     break
                 
-
-
+        longDone = False
         for bar in testBars:
             cls.bot.on_realtime_update(requestID, None, bar["Open"], bar["High"], bar["Low"], bar["Close"], None, None, None)
         
             if cls.tracker.isLongOrderSent() and not cls.tracker.isLongOrderFilled():
                 cls.bot.updateStatus(cls.tracker.getLongOpenOrderID(), "Filled")
 
-            if cls.tracker.isLongOrderFilled():
+            if cls.tracker.isLongOrderFilled() and not longDone:
                 if bar["High"] >= cls.tracker.getLongProfitTarget():
                     cls.bot.updateStatus(cls.tracker.getLongProfitID(), "Filled")
+                    cls.bot.updateStatus(cls.tracker.getLongProfitID(), "Filled")
+                    longDone = True
 
     def test_long_order_sent(self):
         self.assertTrue(self.bot.executionTracker.isLongOrderSent(), "Long Order Sent")
