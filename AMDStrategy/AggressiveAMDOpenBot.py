@@ -5,6 +5,7 @@ import os
 from AMDStrategy import Constants as const
 import math
 from AMDStrategy import OpenBotBase
+from pickle import TRUE
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -19,11 +20,15 @@ logger.addHandler(file_handler)
 class AggressiveAMDBot(OpenBotBase.OpenBotBase):
     
     def updateStatus(self, orderID, status):
-        if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
+        if self.executionTracker.isLongOrderFilled() and self.executionTracker.isShortOrderFilled():
             return
         
-        if self.executionTracker.isLongOrderExecuted():
+        if self.executionTracker.isLongOrderSent():
             if status == "Filled":
+                if orderID == self.executionTracker._longOrder._openOrder.orderId:
+                    logger.info(self.symbol + " Long entry filled.")
+                    self.executionTracker._longOrderFilled = True
+                
                 if orderID == self.executionTracker._longOrder._stopOrder.orderId:
                     logger.info(self.symbol + " Stop order hit, creating response order.")
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitForShort, self.profitTargetForShort, self.stopLossForShort)
@@ -40,8 +45,12 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
                     logger.info(self.symbol + " long profit hit")
                     self.done = True
                 
-        if self.executionTracker.isShortOrderExecuted():
+        if self.executionTracker.isShortOrderSent():
             if status == "Filled": 
+                if orderID == self.executionTracker._shortOrder._openOrder.orderId:
+                    logger.info(self.symbol + " Short entry filled.")
+                    self.executionTracker._shortOrderFilled = True
+                
                 if orderID == self.executionTracker._shortOrder._stopOrder.orderId:
                     logger.info(self.symbol + " Stop order hit, creating response order.")
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
@@ -57,6 +66,11 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
                 if orderID == self.executionTracker._shortOrder._profitOrder.orderId:
                     logger.info(self.symbol + " short profit hit")
                     self.done = True
+
+    def cancel_entry_order(self, orderID):
+        logger.info(self.symbol + " hit profit target without filling entry, canceling")
+        self.ib.cancelOrder(orderID)
+        self.done = True
                     
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
         if self.done:
@@ -83,11 +97,23 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
                 self.openBar.low = min(o.low for o in self.startingBars)
                 self.openBar.high = max(o.high for o in self.startingBars)
                 
-            if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
+            if self.executionTracker.isLongOrderFilled() and self.executionTracker.isShortOrderFilled():
                 if self.timingCounter % 120 == 0:
                     logger.info("Both long and Short are done")
                 self.timingCounter += 1
                 return
+            
+            if self.executionTracker.isLongOrderSent() and not self.executionTracker.isLongOrderFilled():
+                if high >= self.executionTracker._longOrder._profitOrder.lmtPrice:
+                    logger.info("Long profit hit without fill")
+                    self.cancel_entry_order(self.executionTracker._longOrder._openOrder.orderId)
+                    return
+                
+            if self.executionTracker.isShortOrderSent() and not self.executionTracker.isShortOrderFilled():
+                if low <= self.executionTracker._shortOrder._profitOrder.lmtPrice:
+                    logger.info("Short profit hit without fill")
+                    self.cancel_entry_order(self.executionTracker._shortOrder._openOrder.orderId)
+                    return
 
             if self.symbol not in gb.Globals.getInstance().activeOrders:
                 openBarDiff = self.openBar.high - self.openBar.low
@@ -109,7 +135,7 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
                 self.stopLossForShort = expectedHigh
 
             
-                if high > expectedHigh and not self.executionTracker.isLongOrderExecuted():                    
+                if high >= expectedHigh and not self.executionTracker.isLongOrderSent():                    
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     
                     self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
@@ -121,7 +147,7 @@ class AggressiveAMDBot(OpenBotBase.OpenBotBase):
                     self.update_globals_for_orders()
                     
                     logger.info("Buy " + self.symbol)
-                elif low < expectedLow and not self.executionTracker.isShortOrderExecuted():
+                elif low <= expectedLow and not self.executionTracker.isShortOrderSent():
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.entryLimitForShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)

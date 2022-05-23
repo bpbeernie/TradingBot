@@ -33,7 +33,7 @@ class TestAMDReverseHappyBot(unittest.TestCase):
         for bar in testBars:
             cls.bot.on_realtime_update(requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
             
-            if cls.bot.executionTracker.isShortOrderExecuted() and bar[2] < cls.bot.profitTargetForShort:
+            if cls.bot.executionTracker.isShortOrderSent() and bar[2] < cls.bot.profitTargetForShort:
                 cls.bot.updateStatus(cls.bot.executionTracker._shortOrder._profitOrder.orderId, "Filled")
         
         cls.bot.updateStatus(cls.bot.executionTracker._longOrder._profitOrder.orderId, "Filled")
@@ -61,10 +61,10 @@ class TestAMDReverseHappyBot(unittest.TestCase):
         self.assertTrue("AAPL" in gb.Globals.getInstance().activeOrders.keys(), "Added to globals")
         
     def test_check_short_executed(self):
-        self.assertTrue(self.bot.executionTracker.isShortOrderExecuted(), "Short has been executed")
+        self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short has been executed")
         
     def test_check_long_executed(self):
-        self.assertTrue(self.bot.executionTracker.isLongOrderExecuted(), "Long has been executed")
+        self.assertTrue(self.bot.executionTracker.isLongOrderSent(), "Long has been executed")
 
     def test_check_done(self):
         self.assertTrue(self.bot.done, "Bot is done")

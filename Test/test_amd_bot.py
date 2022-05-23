@@ -60,7 +60,7 @@ class TestAMDBot(unittest.TestCase):
 
 
     def test_check_long_executed(self):
-        self.assertTrue(self.bot.executionTracker.isLongOrderExecuted(), "Long has been executed")
+        self.assertTrue(self.bot.executionTracker.isLongOrderSent(), "Long has been executed")
         
         
 

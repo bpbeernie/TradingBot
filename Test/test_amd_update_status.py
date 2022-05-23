@@ -34,19 +34,19 @@ class TestAMDBotUpdateStatus(unittest.TestCase):
         for bar in self.testBars[:60]:
             self.bot.on_realtime_update(self.requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
         
-        self.assertTrue(self.bot.executionTracker.isLongOrderExecuted(), "Long order has been executed")
-        self.assertFalse(self.bot.executionTracker.isShortOrderExecuted(), "Short order has not been executed yet")
+        self.assertTrue(self.bot.executionTracker.isLongOrderSent(), "Long order has been executed")
+        self.assertFalse(self.bot.executionTracker.isShortOrderSent(), "Short order has not been executed yet")
         
         longOrderID = self.bot.executionTracker._longOrder._stopOrder.orderId
         self.bot.updateStatus(longOrderID, "Filled")
         
-        self.assertTrue(self.bot.executionTracker.isShortOrderExecuted(), "Short order has been executed")
+        self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short order has been executed")
         
     def test_short_profit_hit(self):     
         for bar in self.testBars[36:]:
             self.bot.on_realtime_update(self.requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
 
-        self.assertTrue(self.bot.executionTracker.isShortOrderExecuted(), "Short order has been executed")
+        self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short order has been executed")
         
         shortOrderID = self.bot.executionTracker._shortOrder._profitOrder.orderId
         print("short order ID: " + str(shortOrderID))

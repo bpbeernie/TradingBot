@@ -19,11 +19,11 @@ logger.addHandler(file_handler)
 class ReverseAMDBot(OpenBotBase.OpenBotBase):
     
     def updateStatus(self, orderID, status):
-        if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
+        if self.executionTracker.isLongOrderSent() and self.executionTracker.isShortOrderSent():
             self.done = True
             return
         
-        if self.executionTracker.isLongOrderExecuted():
+        if self.executionTracker.isLongOrderSent():
             if status == "Filled":
                 if orderID == self.executionTracker._longOrder._stopOrder.orderId:
                     logger.info("AMD Stop order hit, creating possibility response order.")
@@ -41,7 +41,7 @@ class ReverseAMDBot(OpenBotBase.OpenBotBase):
                     
                     self.update_globals_for_orders()
                 
-        if self.executionTracker.isShortOrderExecuted():
+        if self.executionTracker.isShortOrderSent():
             if status == "Filled": 
                 if orderID == self.executionTracker._shortOrder._stopOrder.orderId:
                     logger.info("AMD Stop order hit, creating possibility response order.")
@@ -85,7 +85,7 @@ class ReverseAMDBot(OpenBotBase.OpenBotBase):
                 self.openBar.low = min(o.low for o in self.startingBars)
                 self.openBar.high = max(o.high for o in self.startingBars)
 
-            if self.executionTracker.isLongOrderExecuted() and self.executionTracker.isShortOrderExecuted():
+            if self.executionTracker.isLongOrderSent() and self.executionTracker.isShortOrderSent():
                 if self.timingCounter % 120 == 0:
                     logger.info("Both long and Short are done for: " + self.symbol)
                 self.timingCounter += 1
@@ -111,7 +111,7 @@ class ReverseAMDBot(OpenBotBase.OpenBotBase):
                 self.stopLossForShort = expectedHigh + risk
 
             
-                if high > self.entryLimitForShort and not self.executionTracker.isShortOrderExecuted():                    
+                if high > self.entryLimitForShort and not self.executionTracker.isShortOrderSent():                    
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "SELL", self.quantity, self.entryLimitForShort, self.profitTargetForShort, self.stopLossForShort)
                     
                     self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
@@ -123,7 +123,7 @@ class ReverseAMDBot(OpenBotBase.OpenBotBase):
                     self.update_globals_for_orders()
                     
                     logger.info("Short AMD")
-                elif low < self.entryLimitForLong and not self.executionTracker.isLongOrderExecuted():
+                elif low < self.entryLimitForLong and not self.executionTracker.isLongOrderSent():
                     openOrder, profitOrder, stopOrder = orders.limitBracketOrder(self.symbol, gb.Globals.getInstance().orderId, "BUY", self.quantity, self.entryLimitForLong, self.profitTargetForLong, self.stopLossForLong)
                     
                     self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
