@@ -44,3 +44,6 @@ class TrackerWrapper():
     
     def getLongStopID(self):
         return self._amdTracker._longOrder._stopOrder.orderId
+    
+    def getCount(self):
+        return self._amdTracker._count

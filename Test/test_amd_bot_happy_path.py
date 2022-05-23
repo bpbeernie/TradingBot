@@ -56,7 +56,8 @@ class TestAMDHappyBot(unittest.TestCase):
         self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short has been executed")
         
         
-
+    def test_count(self):
+        self.assertEqual(1, self.bot.executionTracker._count, "Only 1 orders")
 
     @classmethod
     def generateBars(self, _open, high, low, _close):

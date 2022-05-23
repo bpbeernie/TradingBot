@@ -91,5 +91,8 @@ class TestAggressiveAMDHappyLongBot(unittest.TestCase):
     def test_long_open_id(self):
         self.assertEqual(self.longOrderID, self.tracker.getLongOpenOrderID(), "only 1 long")
 
+    def test_count(self):
+        self.assertEqual(2, self.tracker.getCount(), "Only 2 orders")
+
 if __name__ == '__main__':
     unittest.main()

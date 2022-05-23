@@ -70,7 +70,9 @@ class TestAggressiveAMDHappyLongBot(unittest.TestCase):
         
     def test_Short_order_filled(self):
         self.assertTrue(self.bot.executionTracker.isShortOrderFilled(), "Short Order Filled")
-
+        
+    def test_count(self):
+        self.assertEqual(2, self.tracker.getCount(), "Only 2 orders")
 
 if __name__ == '__main__':
     unittest.main()

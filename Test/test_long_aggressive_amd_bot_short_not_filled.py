@@ -66,5 +66,8 @@ class TestAggressiveAMDCancelBot(unittest.TestCase):
     def test_done(self):
         self.assertTrue(self.bot.done, "Order is done")
 
+    def test_count(self):
+        self.assertEqual(2, self.bot.executionTracker._count, "Only 2 orders")
+
 if __name__ == '__main__':
     unittest.main()

@@ -88,5 +88,8 @@ class TestAggressiveAMDCriticalFixBot(unittest.TestCase):
     def test_Only_One_reverse_stop(self):
         self.assertEqual(self.shortOrderID, self.tracker.getShortOpenOrderID(), "Only 1 short order made")
 
+    def test_count(self):
+        self.assertEqual(2, self.tracker.getCount(), "Only 2 orders")
+
 if __name__ == '__main__':
     unittest.main()

@@ -69,6 +69,9 @@ class TestAMDReverseHappyBot(unittest.TestCase):
     def test_check_done(self):
         self.assertTrue(self.bot.done, "Bot is done")
 
+    def test_count(self):
+        self.assertEqual(2, self.bot.executionTracker._count, "Only 2 orders")
+
     @classmethod
     def generateBars(self, _open, high, low, _close):
         seed(1)

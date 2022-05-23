@@ -68,6 +68,8 @@ class TestAggressiveAMDHappyLongBot(unittest.TestCase):
     def test_done(self):
         self.assertTrue(self.bot.done, "done")
 
+    def test_count(self):
+        self.assertEqual(1, self.bot.executionTracker._count, "Only 2 orders")
 
 if __name__ == '__main__':
     unittest.main()
