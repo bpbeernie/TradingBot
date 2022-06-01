@@ -18,8 +18,14 @@ class TrackerWrapper():
     def getShortOpenOrderID(self):
         return self._amdTracker._shortOrder._openOrder.orderId
     
+    def getShortOpenOrderPrice(self):
+        return self._amdTracker._shortOrder._openOrder.lmtPrice
+    
     def getLongOpenOrderID(self):
         return self._amdTracker._longOrder._openOrder.orderId
+    
+    def getLongOpenOrderPrice(self):
+        return self._amdTracker._longOrder._openOrder.lmtPrice
     
     def getShortProfitTarget(self):
         return self._amdTracker._shortOrder._profitOrder.lmtPrice
