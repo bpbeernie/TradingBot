@@ -1,5 +1,5 @@
 from UpwardBreakTriangleStrategy import InteractiveBrokersPythonBot
-from AMDStrategy import AggressiveAMDOpenBot, ReverseAMDOpenBot
+from AMDStrategy import AggressiveAMDOpenBot, ReverseAMDOpenBot, AggressiveAMDOpenBotV2
 from LODStrategy import LODBounceBotBuilder
 from IB import IBClient as ibClient
 import threading
@@ -50,6 +50,7 @@ def run():
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "TWTR")) 
     botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
     
+    botList.append(AggressiveAMDOpenBotV2.AggressiveAMDBotV2(ib, "GM")) 
     #testIB = IBTestApi(ib)
     #botList.extend(LODBounceBotBuilder.create_bots(testIB))
     
