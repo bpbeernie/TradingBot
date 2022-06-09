@@ -5,6 +5,8 @@ import os
 from AMDStrategy import Constants as const
 import math
 from AMDStrategy import OpenBotBase, TrackerWrapper
+import datetime
+import pytz
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -89,6 +91,14 @@ class AggressiveAMDBotV3(OpenBotBase.OpenBotBase):
         return bar
                     
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
+        if self.symbol == "META":
+            now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
+            today630am = now.replace(hour=6, minute=30, second=0, microsecond=0)
+            today1pm = now.replace(hour=13, minute=0, second=0, microsecond=0)
+            if now < today630am or now > today1pm:
+                logger.info(self.symbol + f" don't process META data outside trading hours")
+                return
+        
         if self.done:
             return
         
