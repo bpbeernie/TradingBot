@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 
 import sys
 sys.modules['gb'] = Mock()
-from AMDStrategy.AggressiveAMDOpenBot import AggressiveAMDBot
+from AMDStrategy.AggressiveAMDOpenBotV3 import AggressiveAMDBotV3
 from random import seed
 from random import uniform
 from random import randint
@@ -21,7 +21,7 @@ class TestAMDHappyBot(unittest.TestCase):
         ib = Mock()
         ib.reqRealTimeBars = Mock(return_value = 1)
         
-        cls.bot = AggressiveAMDBot(ib, "AAPL")
+        cls.bot = AggressiveAMDBotV3(ib, "AAPL")
 
         cls.bot.setup()
         

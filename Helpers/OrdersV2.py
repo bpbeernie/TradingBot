@@ -13,6 +13,18 @@ file_handler = logging.FileHandler(log_filename, mode="a", encoding=None, delay=
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
+def createContract(symbol):
+    contract = Contract()
+    contract.symbol = symbol.upper()
+    contract.secType = "STK"
+    contract.exchange = "SMART"
+    contract.currency = "USD"
+    
+    if symbol == "META":
+        contract.primaryExchange = "NASDAQ"
+    
+    return contract
+
 #Bracet Order Setup
 def bracketOrder(symbol, parentOrderId, action, quantity, profitTarget, stopLoss):
     #Initial Entry
@@ -159,11 +171,7 @@ def marketBracketOrder(symbol, parentOrderId, action, quantity, profitTarget, st
     return parent, profitTargetOrder, stopLossOrder
 
 def closingOrder(symbol, orderId, quantity):    
-    contract = Contract()
-    contract.symbol = symbol.upper()
-    contract.secType = "STK"
-    contract.exchange = "SMART"
-    contract.currency = "USD"
+    contract = createContract(symbol)
     
     if (quantity > 0):
         action = "SELL"
@@ -179,5 +187,5 @@ def closingOrder(symbol, orderId, quantity):
     closingOrder.transmit = True
  
     logger.info(closingOrder)
- 
+    
     return contract, closingOrder

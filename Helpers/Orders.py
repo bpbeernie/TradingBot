@@ -113,6 +113,9 @@ def closingOrder(symbol, orderId, quantity):
     contract.exchange = "SMART"
     contract.currency = "USD"
     
+    if contract.symbol == "META":
+        contract.primaryExchange = "NASDAQ"
+    
     if (quantity > 0):
         action = "SELL"
     else:

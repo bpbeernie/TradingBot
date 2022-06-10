@@ -1,7 +1,7 @@
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from Globals import Globals as gb
-from Helpers import Orders as ord
+from Helpers import OrdersV2 as ord
 
 #Class for Interactive Brokers Connection
 class IBApi(EWrapper,EClient):

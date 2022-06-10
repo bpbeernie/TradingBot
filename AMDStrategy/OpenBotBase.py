@@ -52,7 +52,11 @@ class OpenBotBase:
         self.contract.secType = "STK"
         self.contract.exchange = "SMART"
         self.contract.currency = "USD"
-        self.contract.primaryExchange = "ARCA"
+        
+        if self.contract.symbol == "META":
+            self.contract.primaryExchange = "NASDAQ"
+        else:
+            self.contract.primaryExchange = "ARCA"
 
         # Request Market Data
         print("Start: " + self.symbol + str(self.reqId))
