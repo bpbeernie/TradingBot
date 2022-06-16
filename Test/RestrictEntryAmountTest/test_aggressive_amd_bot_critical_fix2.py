@@ -4,7 +4,7 @@ import sys
 from pickle import FALSE
 from AMDStrategy.TrackerWrapper import TrackerWrapper
 sys.modules['gb'] = Mock()
-from AMDStrategy.AggressiveAMDOpenBotV2 import AggressiveAMDBotV2 as AMDBot
+from AMDStrategy.AggressiveAMDOpenBotV3 import AggressiveAMDBotV3 as AMDBot
 from random import seed
 from random import uniform
 from random import randint

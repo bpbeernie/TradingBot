@@ -120,19 +120,19 @@ class AggressiveAMDBotV3(OpenBotBase.OpenBotBase):
                 
             if self.executionTracker.isLongOrderFilled() and self.executionTracker.isShortOrderFilled():
                 if self.timingCounter % 120 == 0:
-                    logger.info("Both long and Short are done")
+                    logger.info(self.symbol + ": Both long and Short are done")
                 self.timingCounter += 1
                 return
             
             if self.executionTracker.isLongOrderSent() and not self.executionTracker.isLongOrderFilled():
                 if high >= self.executionTracker._longOrder._profitOrder.lmtPrice:
-                    logger.info("Long profit hit without fill")
+                    logger.info(self.symbol + ": Long profit hit without fill")
                     self.cancel_entry_order(self.executionTracker._longOrder._openOrder.orderId)
                     return
                 
             if self.executionTracker.isShortOrderSent() and not self.executionTracker.isShortOrderFilled():
                 if low <= self.executionTracker._shortOrder._profitOrder.lmtPrice:
-                    logger.info("Short profit hit without fill")
+                    logger.info(self.symbol + ": Short profit hit without fill")
                     self.cancel_entry_order(self.executionTracker._shortOrder._openOrder.orderId)
                     return
 
