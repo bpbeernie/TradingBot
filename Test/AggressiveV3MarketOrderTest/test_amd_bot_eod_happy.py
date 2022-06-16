@@ -1,19 +1,13 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 from IB import IBClient
 import sys
 sys.modules['gb'] = Mock()
 from AMDStrategy.AggressiveAMDOpenBotV3 import AggressiveAMDBotV3
-from random import seed
-from random import uniform
-from random import randint
-from Globals import Globals as gb
 from freezegun import freeze_time
 import datetime
-import pytz
 import pickle
 from AMDStrategy.TrackerWrapper import TrackerWrapper
-from ibapi.contract import Contract
 
 class TestAMDBotEOD(unittest.TestCase):
     @classmethod
@@ -27,7 +21,7 @@ class TestAMDBotEOD(unittest.TestCase):
             cls.bot.setup()
             cls.tracker = TrackerWrapper(cls.bot.executionTracker)
             
-            file_name = "Data/META_2022-06-10.pkl"
+            file_name = "../Data/META_2022-06-10.pkl"
             
             testBars = []
             
@@ -38,7 +32,6 @@ class TestAMDBotEOD(unittest.TestCase):
                     except EOFError:
                         break
             
-            longDone = False
             shortDone = False
             for bar in testBars[:-6]:
                 cls.bot.on_realtime_update(requestID, None, bar.open, bar.high, bar.low, bar.close, None, None, None)

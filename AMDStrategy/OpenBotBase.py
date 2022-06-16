@@ -80,8 +80,9 @@ class OpenBotBase:
         
         OpenBotBase.lock.acquire()
         if not OpenBotBase.processedEndOfDay and now > today1259pm:
-            logger.info("Processed EOD")
+            logger.info("Processing EOD")
             OpenBotBase.processedEndOfDay = True
             self.ib.reqGlobalCancel()
             self.ib.reqAccountUpdates(True, "1")
+            logger.info("Processed EOD")
         OpenBotBase.lock.release()
