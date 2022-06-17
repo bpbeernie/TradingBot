@@ -79,3 +79,11 @@ class IBApi(EWrapper,EClient):
             closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
             self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
 
+    def position(self, account, contract, position, float):
+        print("Received Position Update: " + contract.symbol + " : " + str(position))
+        if position != 0 and contract.symbol not in self.closedPositions:
+            print("Closing position for: " + contract.symbol)
+            self.closedPositions.append(contract.symbol)
+            gb.Globals.getInstance().orderResponses = {}
+            closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
+            self.placeOrder(closingOrder.orderId, closingContract, closingOrder)

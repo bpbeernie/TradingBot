@@ -7,6 +7,7 @@ import datetime
 import pytz
 from AMDStrategy import AMDExecutionTracker as tracker
 import threading
+from pickle import TRUE
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -21,6 +22,7 @@ logger.addHandler(file_handler)
 #Bot Logic
 class OpenBotBase:
     processedEndOfDay = False
+    processedEndOfDayBackup = False
     lock = threading.Lock()
     
     def __init__(self, ib, symbol):
@@ -85,4 +87,13 @@ class OpenBotBase:
             self.ib.reqGlobalCancel()
             self.ib.reqAccountUpdates(True, "1")
             logger.info("Processed EOD")
+        OpenBotBase.lock.release()
+        
+        today125945pm = now.replace(hour=12, minute=59, second=45, microsecond=0)
+        OpenBotBase.lock.acquire()
+        if not OpenBotBase.processedEndOfDayBackup and now > today125945pm:
+            logger.info("Processing EOD Backup")
+            OpenBotBase.processedEndOfDayBackup = True
+            self.ib.reqPositions()
+            logger.info("Finished EOD Backup")
         OpenBotBase.lock.release()
