@@ -38,7 +38,7 @@ class TestAMDBot(unittest.TestCase):
         self.assertEqual(self.bot.openBar.high, 110.96, "High setup properly")
         
     def test_entry_triggers_quantity(self):
-        self.assertEqual(self.bot.quantity, 34, "Test Quantity")
+        self.assertEqual(self.bot.quantity, 45, "Test Quantity")
         
     def test_entry_triggers_profitTargets(self):
         self.assertEqual(round(self.bot.profitTargetForLong, 2), 113.29, "Test Profit Target Long")

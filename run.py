@@ -50,7 +50,7 @@ def run():
     #botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "TWTR")) 
     #botList.append(AggressiveAMDOpenBot.AggressiveAMDBot(ib, "AAPL")) 
     
-    botList.append(AggressiveAMDOpenBotV3.AggressiveAMDBotV3(ib, "AAPL"))
+    #botList.append(AggressiveAMDOpenBotV3.AggressiveAMDBotV3(ib, "AAPL"))
     #botList.append(AggressiveAMDOpenBotV2.AggressiveAMDBotV2(ib, "FB")) 
     botList.append(AggressiveAMDOpenBotV3.AggressiveAMDBotV3(ib, "TWTR")) 
     botList.append(AggressiveAMDOpenBotV3.AggressiveAMDBotV3(ib, "GM")) 

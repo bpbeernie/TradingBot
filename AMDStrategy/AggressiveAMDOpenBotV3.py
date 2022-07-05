@@ -168,7 +168,7 @@ class AggressiveAMDBotV3(OpenBotBase.OpenBotBase):
 
                 entryAmount = self.entryLimitForLong * self.quantity
                 
-                if entryAmount > 20000:
+                if entryAmount > const.MAX_AMOUNT:
                     bar = self.processBar(time, open_, high, low, close, volume)
                     self.startingBars.append(bar)
                     self.numStartingBars = self.numStartingBars + const.STARTING_BAR_COUNT
