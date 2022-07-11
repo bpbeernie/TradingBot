@@ -80,7 +80,7 @@ class TestAMDBotEOD(unittest.TestCase):
         self.assertTrue(self.bot.executionTracker.isShortOrderFilled(), "No Short Order Filled")    
         
     def test_short_quantity(self):
-        self.assertEqual(self.bot.quantity, 159, "Quantity is correct")
+        self.assertEqual(self.bot.quantity, 201, "Quantity is correct")
         
     def test_short_profit_target(self):
         self.assertEqual(self.bot.profitTargetForShort, 31.93, "Profit target is correct")
@@ -90,7 +90,7 @@ class TestAMDBotEOD(unittest.TestCase):
           
     def test_amount_bid(self):
         totalbid = self.bot.quantity*(self.bot.entryLimitForShort - self.bot.profitTargetForShort)
-        self.assertAlmostEqual(totalbid, 100.17, msg="Amount purchased is corrects", delta=0.1)
+        self.assertAlmostEqual(totalbid, 126.53, msg="Amount purchased is corrects", delta=0.11)
 
 class IBWrapper(IBClient.IBApi):
     def __init__(self):

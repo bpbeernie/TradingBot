@@ -38,7 +38,7 @@ class TestAMDHappyBot(unittest.TestCase):
         self.assertEqual(self.bot.openBar.high, 171.79, "High setup properly")
         
     def test_entry_triggers_quantity(self):
-        self.assertEqual(self.bot.quantity, 51, "Test Quantity")
+        self.assertEqual(self.bot.quantity, 64, "Test Quantity")
         
     def test_entry_triggers_entries(self):
         self.assertEqual(round(self.bot.entryLimitForLong, 2), 171.88, "Entry for Long")
