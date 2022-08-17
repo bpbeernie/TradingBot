@@ -7,57 +7,63 @@ from AMDStrategy.AggressiveAMDOpenBotV4 import AggressiveAMDBotV4 as AMDBot
 from random import seed
 from random import uniform
 from random import randint
-from Test.Data.AMDTestData import happyPath
+from Test.Data.AMDTestData import *
 from Globals import Globals as gb
 from freezegun import freeze_time
 import datetime
 import pytz
 
-@freeze_time("2022-04-08 6:31:34", tz_offset=-8)
-class TestAMDHappyBot(unittest.TestCase):
+
+class TestAMDBot(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         requestID = 1
         ib = Mock()
         ib.reqRealTimeBars = Mock(return_value = 1)
         
-        cls.bot = AMDBot(ib, "AAPL")
+        cls.bot = AMDBot(ib, "AMD")
 
         cls.bot.setup()
         
         testBars = []
         
-        for bar in happyPath:
+        for bar in sadAndHappyPath:
             testBars.extend(cls.generateBars(*bar))
         
         for bar in testBars:
             cls.bot.on_realtime_update(requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
             
     def test_on_openBar(self):
-        self.assertEqual(self.bot.openBar.low, 171.32, "Low setup properly")
-        self.assertEqual(self.bot.openBar.high, 171.79, "High setup properly")
+        self.assertEqual(self.bot.openBar.low, 110.43, "Low setup properly")
+        self.assertEqual(self.bot.openBar.high, 110.96, "High setup properly")
         
     def test_entry_triggers_quantity(self):
-        self.assertEqual(self.bot.quantity, 64, "Test Quantity")
-        
-    def test_entry_triggers_entries(self):
-        self.assertEqual(round(self.bot.entryLimitForLong, 2), 171.88, "Entry for Long")
-        self.assertEqual(round(self.bot.entryLimitForShort, 2), 171.23, "Entry for Short")
+        self.assertEqual(self.bot.quantity, 57, "Test Quantity")
         
     def test_entry_triggers_profitTargets(self):
-        self.assertEqual(round(self.bot.profitTargetForShort, 2), 169.25, "Entry for Short")
+        self.assertEqual(round(self.bot.profitTargetForLong, 2), 113.29, "Test Profit Target Long")
+        self.assertEqual(round(self.bot.profitTargetForShort, 2), 108.1, "Test Profit Target Short")
         
+    def test_entry_triggers_stopLosses(self):
+        self.assertEqual(round(self.bot.stopLossForLong, 2), 110.32, "Test Stop Loss Long")
+        self.assertEqual(round(self.bot.stopLossForShort, 2), 111.07, "Test Stop Loss Short")
+
     def test_check_global_orders(self):
-        self.assertTrue("AAPL" in gb.Globals.getInstance().activeOrders.keys(), "Added to globals")
+        self.assertTrue("AMD" in gb.Globals.getInstance().activeOrders.keys(), "Added to globals")
         
 
+    @freeze_time("2022-04-05 14:21:34", tz_offset=-8)
+    def test_processed_end_of_day_pass(self):
+        self.bot.check_end_of_day()
+        
+        self.assertTrue(self.bot.processedEndOfDay, "Added to globals")
 
-    def test_check_short_executed(self):
-        self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short has been executed")
+
+    def test_check_long_executed(self):
+        self.assertTrue(self.bot.executionTracker.isLongOrderSent(), "Long has been executed")
         
         
-    def test_count(self):
-        self.assertEqual(1, self.bot.executionTracker._count, "Only 1 orders")
+
 
     @classmethod
     def generateBars(self, _open, high, low, _close):

@@ -2,6 +2,8 @@ from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from Globals import Globals as gb
 from Helpers import OrdersV2 as ord
+import datetime
+import pytz
 
 #Class for Interactive Brokers Connection
 class IBApi(EWrapper,EClient):
@@ -10,9 +12,13 @@ class IBApi(EWrapper,EClient):
     def __init__(self):
         EClient.__init__(self, self)
         self.closedPositions = []
+        self._stocksToClose = []
         
     def addBots(self, bots):
         self._botList = bots
+        
+    def addStocksToClose(self, stock):
+        self._stocksToClose.append(stock)
         
     # Historical Backtest Data
     def historicalData(self, reqId, bar):
@@ -65,6 +71,8 @@ class IBApi(EWrapper,EClient):
         
     def updatePortfolio(self, contract, position,
                     marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName):
+        now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
+        today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
         
         super().updatePortfolio(contract, position, marketPrice,
                                 marketValue,averageCost, unrealizedPNL,
@@ -72,12 +80,22 @@ class IBApi(EWrapper,EClient):
         
         print("Received Portfolio Update: " + contract.symbol + " : " + str(position))
         
-        if position != 0 and contract.symbol not in self.closedPositions:
-            print("Closing position for: " + contract.symbol)
-            self.closedPositions.append(contract.symbol)
-            gb.Globals.getInstance().orderResponses = {}
-            closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
-            self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
+        if now > today1259pm:
+            if position != 0 and contract.symbol not in self.closedPositions:
+                print("Closing position for: " + contract.symbol)
+                self.closedPositions.append(contract.symbol)
+                gb.Globals.getInstance().orderResponses = {}
+                closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
+                self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
+        else:
+            if contract.symbol in self._stocksToClose and position != 0:
+                self._stocksToClose.remove(contract.symbol)
+                print("Closing individual stock position for: " + contract.symbol)
+                self.closedPositions.append(contract.symbol)
+                gb.Globals.getInstance().orderResponses = {}
+                closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
+                self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
+                
 
     def position(self, account, contract, position, float):
         print("Received Position Update: " + contract.symbol + " : " + str(position))

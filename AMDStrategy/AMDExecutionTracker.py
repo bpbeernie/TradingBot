@@ -5,6 +5,10 @@ class AMDExecutionTracker:
         self._shortOrderFilled = False
         self._longOrderFilled = False
         self._count = 0
+        self._longProfitHit = False
+        self._shortProfitHit = False
+        self._longStopHit = False
+        self._shortStopHit = False
         
     def setShort(self, openOrder, profitOrder, stopOrder):
         self._shortOrder = OrderSet()

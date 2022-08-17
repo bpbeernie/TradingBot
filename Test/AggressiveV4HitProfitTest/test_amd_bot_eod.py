@@ -7,57 +7,38 @@ from AMDStrategy.AggressiveAMDOpenBotV4 import AggressiveAMDBotV4 as AMDBot
 from random import seed
 from random import uniform
 from random import randint
-from Test.Data.AMDTestData import happyPath
+from Test.Data.AMDTestData import *
 from Globals import Globals as gb
 from freezegun import freeze_time
 import datetime
 import pytz
 
-@freeze_time("2022-04-08 6:31:34", tz_offset=-8)
-class TestAMDHappyBot(unittest.TestCase):
+@freeze_time("2022-04-05 9:21:34", tz_offset=-8)
+class TestAMDBotEOD(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         requestID = 1
         ib = Mock()
         ib.reqRealTimeBars = Mock(return_value = 1)
         
-        cls.bot = AMDBot(ib, "AAPL")
+        cls.bot = AMDBot(ib, "AMD")
 
         cls.bot.setup()
         
         testBars = []
         
-        for bar in happyPath:
+        for bar in sadAndHappyPath:
             testBars.extend(cls.generateBars(*bar))
         
         for bar in testBars:
             cls.bot.on_realtime_update(requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
             
-    def test_on_openBar(self):
-        self.assertEqual(self.bot.openBar.low, 171.32, "Low setup properly")
-        self.assertEqual(self.bot.openBar.high, 171.79, "High setup properly")
+    def test_processed_end_of_day_fail(self):
+        print(datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific")))
         
-    def test_entry_triggers_quantity(self):
-        self.assertEqual(self.bot.quantity, 64, "Test Quantity")
+        self.bot.check_end_of_day()
         
-    def test_entry_triggers_entries(self):
-        self.assertEqual(round(self.bot.entryLimitForLong, 2), 171.88, "Entry for Long")
-        self.assertEqual(round(self.bot.entryLimitForShort, 2), 171.23, "Entry for Short")
-        
-    def test_entry_triggers_profitTargets(self):
-        self.assertEqual(round(self.bot.profitTargetForShort, 2), 169.25, "Entry for Short")
-        
-    def test_check_global_orders(self):
-        self.assertTrue("AAPL" in gb.Globals.getInstance().activeOrders.keys(), "Added to globals")
-        
-
-
-    def test_check_short_executed(self):
-        self.assertTrue(self.bot.executionTracker.isShortOrderSent(), "Short has been executed")
-        
-        
-    def test_count(self):
-        self.assertEqual(1, self.bot.executionTracker._count, "Only 1 orders")
+        self.assertFalse(self.bot.processedEndOfDay, "Not EOD yet")
 
     @classmethod
     def generateBars(self, _open, high, low, _close):
