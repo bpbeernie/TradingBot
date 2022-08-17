@@ -91,7 +91,6 @@ class IBApi(EWrapper,EClient):
             if contract.symbol in self._stocksToClose and position != 0:
                 self._stocksToClose.remove(contract.symbol)
                 print("Closing individual stock position for: " + contract.symbol)
-                self.closedPositions.append(contract.symbol)
                 gb.Globals.getInstance().orderResponses = {}
                 closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
                 self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
