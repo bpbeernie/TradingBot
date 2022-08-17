@@ -119,10 +119,10 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
         return bar
                     
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
+        self.check_end_of_day()
+        
         if self.done:
             return
-        
-        self.check_end_of_day()
         
         if self.symbol == "META":
             now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
