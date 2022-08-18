@@ -70,5 +70,4 @@ Werkzeug==2.2.1
 wrapt==1.12.1
 wsgi-request-logger==0.4.6
 XlsxWriter==3.0.3
-zappa==0.55.0
 zipp==3.8.1
