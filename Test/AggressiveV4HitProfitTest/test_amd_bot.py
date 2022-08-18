@@ -13,7 +13,6 @@ from freezegun import freeze_time
 import datetime
 import pytz
 
-
 class TestAMDBot(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

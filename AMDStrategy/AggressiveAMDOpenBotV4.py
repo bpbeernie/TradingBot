@@ -7,6 +7,7 @@ import math
 from AMDStrategy import OpenBotBase, TrackerWrapper
 import datetime
 import pytz
+from Mail import Email as email
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -148,6 +149,7 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
                 
             if self.executionTracker.isLongOrderSent() and self.executionTracker.isLongOrderFilled() and not self.done:
                 if high >= self.executionTracker._longOrder._profitOrder.lmtPrice:
+                    email.sendEmail(self.symbol + ": Long profit hit", "making sure position is cancelled")
                     logger.info(self.symbol + ": Long profit hit, making sure position is cancelled")
                     self.cancel_entry_order(self.updated_tracker.getLongOpenOrderID())
                     self.cancel_entry_order(self.updated_tracker.getLongProfitID())
@@ -159,6 +161,7 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
                 
             if self.executionTracker.isShortOrderSent() and self.executionTracker.isShortOrderFilled() and not self.done:
                 if low <= self.executionTracker._shortOrder._profitOrder.lmtPrice:
+                    email.sendEmail(self.symbol + ": Short profit hit", "making sure position is cancelled")
                     logger.info(self.symbol + ": Short profit hit, making sure order is cancelled")
                     self.cancel_entry_order(self.updated_tracker.getShortOpenOrderID())
                     self.cancel_entry_order(self.updated_tracker.getShortProfitID())

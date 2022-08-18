@@ -7,6 +7,7 @@ import datetime
 import pytz
 from AMDStrategy import AMDExecutionTracker as tracker
 import threading
+from Mail import Email as email
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -44,6 +45,7 @@ class OpenBotBase:
 
     def setup(self):
         logger.info("Setting up open strategy for " + self.symbol)
+        email.sendEmail(f"Started trading {self.symbol}", f"Trade has started!")
         
         self.executionTracker = tracker.AMDExecutionTracker()
 

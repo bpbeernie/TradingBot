@@ -14,7 +14,6 @@ import datetime
 import pytz
 from Globals import Globals as gb
 
-
 class TestAMDBotUpdateStatus(unittest.TestCase):
     def setUp(self):
         ib = Mock()

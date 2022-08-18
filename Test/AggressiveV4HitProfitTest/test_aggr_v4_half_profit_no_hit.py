@@ -14,6 +14,7 @@ class TestHalfProfit(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
+        
         with freeze_time("2022-08-11 13:30:00") as frozen_datetime:
                 
             requestID = 1
