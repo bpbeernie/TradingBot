@@ -1,3 +1,3 @@
-import Mail
+from Mail import Email
 
-Mail.Email.PATH_TO_CRED = "../../Mail/credentials.json"
+Email.PATH_TO_CRED = "../../Mail/credentials.json"
