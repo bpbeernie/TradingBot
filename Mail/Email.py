@@ -24,7 +24,7 @@ def sendEmail(header, body):
         send_message(service, 'bpbeernie@gmail.com', header, body)
         
     except HttpError as error:
-        print(F'An error occurred: {error}')
+        print(f'An error occurred: {error}')
 
 def send_message(service, destination, obj, body):
     return service.users().messages().send(
