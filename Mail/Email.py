@@ -7,7 +7,6 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from email.mime.text import MIMEText
 
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 from base64 import urlsafe_b64encode
 
@@ -23,8 +22,8 @@ def sendEmail(header, body):
         
         send_message(service, 'bpbeernie@gmail.com', header, body)
         
-    except HttpError as error:
-        print(f'An error occurred: {error}')
+    except Exception as error:
+        print(f'Failed to send email an error occurred: {error}')
 
 def send_message(service, destination, obj, body):
     return service.users().messages().send(
