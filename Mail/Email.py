@@ -50,9 +50,9 @@ def gmail_authenticate():
             creds = pickle.load(token)
     # if there are no (valid) credentials availablle, let the user log in.
     if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
+        try:
             creds.refresh(Request())
-        else:
+        except:
             flow = InstalledAppFlow.from_client_secrets_file(PATH_TO_CRED, SCOPES)
 
             creds = flow.run_local_server(port=0)
