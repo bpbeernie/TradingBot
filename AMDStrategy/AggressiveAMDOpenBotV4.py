@@ -57,6 +57,7 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
         else:
             if self.executionTracker.isLongOrderSent():
                 if orderID == self.executionTracker._longOrder._openOrder.orderId and not self.executionTracker.isLongOrderFilled():
+                    email.sendEmail(self.symbol + ": Long entry filled.", "Order is active!")
                     logger.info(self.symbol + " Long entry filled.")
                     self.executionTracker._longOrderFilled = True
                 
@@ -81,6 +82,7 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
                     
             if self.executionTracker.isShortOrderSent():
                 if orderID == self.executionTracker._shortOrder._openOrder.orderId and not self.executionTracker.isShortOrderFilled():
+                    email.sendEmail(self.symbol + ": Short entry filled.", "Order is active!")
                     logger.info(self.symbol + " Short entry filled.")
                     self.executionTracker._shortOrderFilled = True
                 

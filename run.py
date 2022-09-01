@@ -55,7 +55,7 @@ def run():
     botList.append(AggressiveAMDOpenBotV4.AggressiveAMDBotV4(ib, "TWTR")) 
     botList.append(AggressiveAMDOpenBotV4.AggressiveAMDBotV4(ib, "GM")) 
     
-    botList.append(AggressiveAMDOpenBotV4.AggressiveAMDBotV4(ib, "META")) 
+    botList.append(AggressiveAMDOpenBotV4.AggressiveAMDBotV4(ib, "BABA")) 
     #testIB = IBTestApi(ib)
     #botList.extend(LODBounceBotBuilder.create_bots(testIB))
     
