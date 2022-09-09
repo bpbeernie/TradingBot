@@ -15,6 +15,9 @@ SCOPES = ['https://mail.google.com/']
 FROM_EMAIL = 'bpbeernie.trading@gmail.com'
 
 def sendEmail(header, body):
+    pass
+
+"""
     try:
         body = f"{datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n{body}"
         
@@ -24,7 +27,7 @@ def sendEmail(header, body):
         
     except Exception as error:
         print(f'Failed to send email an error occurred: {error}')
-
+"""
 def send_message(service, destination, obj, body):
     return service.users().messages().send(
       userId="me",
@@ -59,3 +62,4 @@ def gmail_authenticate():
         with open("token.pickle", "wb") as token:
             pickle.dump(creds, token)
     return build('gmail', 'v1', credentials=creds)
+    
