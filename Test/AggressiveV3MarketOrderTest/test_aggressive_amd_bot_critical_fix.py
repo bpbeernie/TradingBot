@@ -13,11 +13,11 @@ from freezegun import freeze_time
 import datetime
 import pytz
 import pickle
-import Mail
+#import Mail
 
 @freeze_time("2022-05-22 6:31:34", tz_offset=-8)
 class TestAggressiveAMDCriticalFixBot(unittest.TestCase):
-    Mail.Email.PATH_TO_CRED = "../../Mail/credentials.json"
+    #Mail.Email.PATH_TO_CRED = "../../Mail/credentials.json"
     @classmethod
     def setUpClass(cls):
         requestID = 1

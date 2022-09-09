@@ -1,3 +1,3 @@
-import Mail
+#import Mail
 
-Mail.Email.PATH_TO_CRED = "../../Mail/credentials.json"
+#Mail.Email.PATH_TO_CRED = "../../Mail/credentials.json"
