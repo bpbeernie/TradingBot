@@ -1,65 +1,64 @@
-from __future__ import print_function
-import os
-import pickle
 import datetime
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
 from email.mime.text import MIMEText
-
-from googleapiclient.discovery import build
+import smtplib
+import ssl
+import json
+from threading import Thread
 
 from base64 import urlsafe_b64encode
 
 PATH_TO_CRED = './Mail/credentials.json'
-SCOPES = ['https://mail.google.com/']
-FROM_EMAIL = 'bpbeernie.trading@gmail.com'
+FROM_EMAIL = "bpbeernie.trading@gmail.com"
+SETUP = False
+
+def setup():
+    global SETUP
+    
+    if SETUP:
+        return
+    
+    global PORT
+    global PASSWORD
+    global USERNAME
+    global SERVER
+    
+    with open(PATH_TO_CRED) as f:
+        cred = json.load(f)
+    
+        PORT = cred["PORT"]
+        PASSWORD = cred["PASSWORD"]
+        USERNAME = cred["USERNAME"]
+        SERVER = cred["SERVER"]
+        
+        SETUP = True
 
 def sendEmail(header, body):
-    pass
+    thread = Thread(target = emailThread, args=(header,body))
+    thread.start()
 
-"""
+def emailThread(header, body):
     try:
+        setup()
         body = f"{datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n{body}"
-        
-        service = gmail_authenticate()
-        
-        send_message(service, 'bpbeernie@gmail.com', header, body)
-        
+        send_message("bpbeernie@gmail.com", header, body)
+
     except Exception as error:
-        print(f'Failed to send email an error occurred: {error}')
-"""
-def send_message(service, destination, obj, body):
-    return service.users().messages().send(
-      userId="me",
-      body=build_message(destination, obj, body)
-    ).execute()
+        print(f"Failed to send email an error occurred: {error}")
+        
+def send_message(destination, obj, body):
+    message = 'Subject: {}\n\n{}'.format(obj, body)
+    
+    service = ssl.create_default_context()
+    
+    with smtplib.SMTP_SSL(SERVER, PORT, context=service) as server:
+        server.login(USERNAME, PASSWORD)
+        server.sendmail(FROM_EMAIL, destination, message)
+
 
 def build_message(destination, obj, body):
     message = MIMEText(body)
-    message['to'] = destination
-    message['from'] = FROM_EMAIL
-    message['subject'] = obj
+    message["to"] = destination
+    message["from"] = FROM_EMAIL
+    message["subject"] = obj
 
-    return {'raw': urlsafe_b64encode(message.as_bytes()).decode()}
-
-
-def gmail_authenticate():
-    creds = None
-    # the file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first time
-    if os.path.exists("token.pickle"):
-        with open("token.pickle", "rb") as token:
-            creds = pickle.load(token)
-    # if there are no (valid) credentials availablle, let the user log in.
-    if not creds or not creds.valid:
-        try:
-            creds.refresh(Request())
-        except:
-            flow = InstalledAppFlow.from_client_secrets_file(PATH_TO_CRED, SCOPES)
-
-            creds = flow.run_local_server(port=0)
-        # save the credentials for the next run
-        with open("token.pickle", "wb") as token:
-            pickle.dump(creds, token)
-    return build('gmail', 'v1', credentials=creds)
-    
+    return {"raw": urlsafe_b64encode(message.as_bytes()).decode()}
