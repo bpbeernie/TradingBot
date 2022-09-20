@@ -58,6 +58,8 @@ class OpenBotBase:
         
         if self.contract.symbol == "META":
             self.contract.primaryExchange = "NASDAQ"
+        elif self.contract.symbol == "GM":
+            self.contract.primaryExchange = "NYSE"
         else:
             self.contract.primaryExchange = "ARCA"
 

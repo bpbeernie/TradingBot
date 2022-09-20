@@ -22,6 +22,8 @@ def createContract(symbol):
     
     if symbol == "META":
         contract.primaryExchange = "NASDAQ"
+    elif symbol == "GM":
+        contract.primaryExchange = "NYSE"
     else:
         contract.primaryExchange = "ARCA"
     
