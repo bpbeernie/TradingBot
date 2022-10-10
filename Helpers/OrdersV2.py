@@ -2,6 +2,7 @@ from ibapi.contract import Contract
 from ibapi.order import *
 import logging
 import os
+from Helpers.Orders import closingOrder
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -45,6 +46,9 @@ def bracketOrder(symbol, parentOrderId, action, quantity, profitTarget, stopLoss
     parent.action = action
     parent.totalQuantity = quantity
     parent.transmit = False
+    parent.eTradeOnly = False
+    parent.firmQuoteOnly = False
+    
     # Profit Target
     profitTargetOrder = Order()
     profitTargetOrder.orderId = parent.orderId+1
@@ -54,6 +58,9 @@ def bracketOrder(symbol, parentOrderId, action, quantity, profitTarget, stopLoss
     profitTargetOrder.lmtPrice = round(profitTarget,2)
     profitTargetOrder.parentId = parentOrderId
     profitTargetOrder.transmit = False
+    profitTargetOrder.eTradeOnly = False
+    profitTargetOrder.firmQuoteOnly = False
+    
     # Stop Loss
     stopLossOrder = Order()
     stopLossOrder.orderId = parent.orderId+2
@@ -63,6 +70,8 @@ def bracketOrder(symbol, parentOrderId, action, quantity, profitTarget, stopLoss
     stopLossOrder.parentId = parentOrderId
     stopLossOrder.auxPrice = round(stopLoss,2)
     stopLossOrder.transmit = True
+    stopLossOrder.eTradeOnly = False
+    stopLossOrder.firmQuoteOnly = False
 
     bracketOrders = [parent, profitTargetOrder, stopLossOrder]
     return bracketOrders
@@ -92,6 +101,9 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     parent.totalQuantity = quantity
     parent.ocaGroup = ocaGroup
     parent.transmit = False
+    parent.eTradeOnly = False
+    parent.firmQuoteOnly = False
+    
     # Profit Target
     profitTargetOrder = Order()
     profitTargetOrder.orderId = parent.orderId+1
@@ -102,6 +114,9 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     profitTargetOrder.parentId = parentOrderId
     profitTargetOrder.ocaGroup = ocaGroup
     profitTargetOrder.transmit = False
+    profitTargetOrder.eTradeOnly = False
+    profitTargetOrder.firmQuoteOnly = False
+    
     # Stop Loss
     stopLossOrder = Order()
     stopLossOrder.orderId = parent.orderId+2
@@ -112,6 +127,8 @@ def limitBracketOrder(symbol, parentOrderId, action, quantity, limit, profitTarg
     stopLossOrder.auxPrice = round(stopLoss,2)
     stopLossOrder.ocaGroup = ocaGroup
     stopLossOrder.transmit = True
+    stopLossOrder.eTradeOnly = False
+    stopLossOrder.firmQuoteOnly = False
     
     logger.info(parent)
     logger.info(profitTargetOrder)
@@ -145,6 +162,9 @@ def marketBracketOrder(symbol, parentOrderId, action, quantity, profitTarget, st
     parent.totalQuantity = quantity
     parent.ocaGroup = ocaGroup
     parent.transmit = False
+    parent.eTradeOnly = False
+    parent.firmQuoteOnly = False
+    
     # Profit Target
     profitTargetOrder = Order()
     profitTargetOrder.orderId = parent.orderId+1
@@ -155,6 +175,9 @@ def marketBracketOrder(symbol, parentOrderId, action, quantity, profitTarget, st
     profitTargetOrder.parentId = parentOrderId
     profitTargetOrder.ocaGroup = ocaGroup
     profitTargetOrder.transmit = False
+    profitTargetOrder.eTradeOnly = False
+    profitTargetOrder.firmQuoteOnly = False
+    
     # Stop Loss
     stopLossOrder = Order()
     stopLossOrder.orderId = parent.orderId+2
@@ -165,6 +188,8 @@ def marketBracketOrder(symbol, parentOrderId, action, quantity, profitTarget, st
     stopLossOrder.auxPrice = round(stopLoss,2)
     stopLossOrder.ocaGroup = ocaGroup
     stopLossOrder.transmit = True
+    stopLossOrder.eTradeOnly = False
+    stopLossOrder.firmQuoteOnly = False
     
     logger.info(parent)
     logger.info(profitTargetOrder)
@@ -189,6 +214,8 @@ def closingOrder(symbol, orderId, quantity):
     closingOrder.action = action
     closingOrder.totalQuantity = abs(quantity)
     closingOrder.transmit = True
+    closingOrder.eTradeOnly = False
+    closingOrder.firmQuoteOnly = False
  
     logger.info(closingOrder)
     
