@@ -13,7 +13,7 @@ from freezegun import freeze_time
 import datetime
 import pytz
 
-@freeze_time("2022-04-05 9:21:34")
+@freeze_time("2022-11-23 9:59:35")
 class TestAMDBotEOD(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

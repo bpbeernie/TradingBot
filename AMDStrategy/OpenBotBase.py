@@ -110,10 +110,10 @@ class OpenBotBase:
         
     def check_end_of_day_early(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
-        today1259pm = now.replace(hour=9, minute=59, second=30, microsecond=0)
+        today0959pm = now.replace(hour=9, minute=59, second=30, microsecond=0)
         
         OpenBotBase.lock.acquire()
-        if not OpenBotBase.processedEndOfDay and now > today1259pm:
+        if not OpenBotBase.processedEndOfDay and now > today0959pm:
             logger.info("Processing Early EOD")
             OpenBotBase.processedEndOfDay = True
             self.ib.reqGlobalCancel()
@@ -121,9 +121,9 @@ class OpenBotBase:
             logger.info("Processed Early EOD")
         OpenBotBase.lock.release()
         
-        today125945pm = now.replace(hour=9, minute=59, second=45, microsecond=0)
+        today095945pm = now.replace(hour=9, minute=59, second=45, microsecond=0)
         OpenBotBase.lock.acquire()
-        if OpenBotBase.processedEndOfDay and not OpenBotBase.processedEndOfDayBackup and now > today125945pm:
+        if OpenBotBase.processedEndOfDay and not OpenBotBase.processedEndOfDayBackup and now > today095945pm:
             logger.info("Processing Early EOD Backup")
             OpenBotBase.processedEndOfDayBackup = True
             self.ib.reqPositions()

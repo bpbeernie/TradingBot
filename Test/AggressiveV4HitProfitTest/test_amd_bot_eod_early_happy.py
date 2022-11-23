@@ -13,7 +13,7 @@ from freezegun import freeze_time
 import datetime
 import pytz
 
-@freeze_time("2022-04-05 9:21:34")
+@freeze_time("2022-11-25 9:59:35")
 class TestAMDBotEOD(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -33,12 +33,12 @@ class TestAMDBotEOD(unittest.TestCase):
         for bar in testBars:
             cls.bot.on_realtime_update(requestID, None, bar[0], bar[1], bar[2], bar[3], None, None, None)
             
-    def test_processed_end_of_day_fail(self):
+    def test_processed_end_of_day_pass(self):
         print(datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific")))
         
         self.bot.check_end_of_day()
         
-        self.assertFalse(self.bot.processedEndOfDay, "Not EOD yet")
+        self.assertTrue(self.bot.processedEndOfDay, "Is EOD")
 
     @classmethod
     def generateBars(self, _open, high, low, _close):
