@@ -4,6 +4,7 @@ from Globals import Globals as gb
 from Helpers import OrdersV2 as ord
 import datetime
 import pytz
+from Globals import SpecialDates as specialdates
 
 #Class for Interactive Brokers Connection
 class IBApi(EWrapper,EClient):
@@ -71,12 +72,21 @@ class IBApi(EWrapper,EClient):
         
     def updatePortfolio(self, contract, position,
                     marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName):
-        now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
-        today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
-        
         super().updatePortfolio(contract, position, marketPrice,
                                 marketValue,averageCost, unrealizedPNL,
                                 realizedPNL, accountName)
+        
+        if datetime.datetime.today().date() in specialdates.EARLY_DATES:
+            self.updatePortfolioEarly(contract, position,
+                    marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName)
+        else:
+            self.updatePortfolioNormal(contract, position,
+                    marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName)
+        
+    def updatePortfolioNormal(self, contract, position,
+                    marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName):
+        now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
+        today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
         
         print("Received Portfolio Update: " + contract.symbol + " : " + str(position))
         
@@ -94,7 +104,28 @@ class IBApi(EWrapper,EClient):
                 gb.Globals.getInstance().orderResponses = {}
                 closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
                 self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
-                
+         
+    def updatePortfolioEarly(self, contract, position,
+                    marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName):
+        now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
+        today959pm = now.replace(hour=9, minute=59, second=30, microsecond=0)
+        
+        print("Received Portfolio Update: " + contract.symbol + " : " + str(position))
+        
+        if now > today959pm:
+            if position != 0 and contract.symbol not in self.closedPositions:
+                print("Closing early position for: " + contract.symbol)
+                self.closedPositions.append(contract.symbol)
+                gb.Globals.getInstance().orderResponses = {}
+                closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
+                self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
+        else:
+            if contract.symbol in self._stocksToClose and position != 0:
+                self._stocksToClose.remove(contract.symbol)
+                print("Closing early individual stock position for: " + contract.symbol)
+                gb.Globals.getInstance().orderResponses = {}
+                closingContract, closingOrder = ord.closingOrder(contract.symbol, gb.Globals.getInstance().getOrderId(), position)
+                self.placeOrder(closingOrder.orderId, closingContract, closingOrder)
 
     def position(self, account, contract, position, float):
         print("Received Position Update: " + contract.symbol + " : " + str(position))

@@ -8,6 +8,7 @@ import pytz
 from AMDStrategy import AMDExecutionTracker as tracker
 import threading
 from Mail import Email as email
+from Globals import SpecialDates as specialdates
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -80,6 +81,12 @@ class OpenBotBase:
         gb.Globals.getInstance().activeOrders[self.symbol] = gb.Globals.getInstance().getOrderId(3)
     
     def check_end_of_day(self):
+        if datetime.datetime.today().date() in specialdates.EARLY_DATES:
+            self.check_end_of_day_early()
+        else:
+            self.check_end_of_day_normal()
+        
+    def check_end_of_day_normal(self):
         now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
         today1259pm = now.replace(hour=12, minute=59, second=30, microsecond=0)
         
@@ -99,4 +106,26 @@ class OpenBotBase:
             OpenBotBase.processedEndOfDayBackup = True
             self.ib.reqPositions()
             logger.info("Finished EOD Backup")
+        OpenBotBase.lock.release()
+        
+    def check_end_of_day_early(self):
+        now = datetime.datetime.now().astimezone(pytz.timezone("Canada/Pacific"))
+        today1259pm = now.replace(hour=9, minute=59, second=30, microsecond=0)
+        
+        OpenBotBase.lock.acquire()
+        if not OpenBotBase.processedEndOfDay and now > today1259pm:
+            logger.info("Processing Early EOD")
+            OpenBotBase.processedEndOfDay = True
+            self.ib.reqGlobalCancel()
+            self.ib.reqAccountUpdates(True, "1")
+            logger.info("Processed Early EOD")
+        OpenBotBase.lock.release()
+        
+        today125945pm = now.replace(hour=9, minute=59, second=45, microsecond=0)
+        OpenBotBase.lock.acquire()
+        if OpenBotBase.processedEndOfDay and not OpenBotBase.processedEndOfDayBackup and now > today125945pm:
+            logger.info("Processing Early EOD Backup")
+            OpenBotBase.processedEndOfDayBackup = True
+            self.ib.reqPositions()
+            logger.info("Finished Early EOD Backup")
         OpenBotBase.lock.release()
