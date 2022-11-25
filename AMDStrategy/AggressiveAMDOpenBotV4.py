@@ -28,82 +28,7 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
         self.numStartingBars = const.STARTING_BAR_COUNT
     
     def updateStatus(self, orderID, status):
-        if self.done:
-            return
-        
-        if status != "Filled":
-            return
-        
-        if self.executionTracker.isLongOrderFilled() and self.executionTracker.isShortOrderFilled():
-            if orderID == self.updated_tracker.getLongProfitID() and not self.updated_tracker.isLongProfitHit():
-                logger.info(self.symbol + " long reverse profit hit")
-                self.executionTracker._longProfitHit = True
-                self.done = True
-                
-            if orderID == self.updated_tracker.getLongStopID() and not self.updated_tracker.isLongStopHit():
-                logger.info(self.symbol + " reverse long stop hit")
-                self.done = True
-                self.executionTracker._longStopHit = True
-                
-            if orderID == self.updated_tracker.getShortProfitID():
-                logger.info(self.symbol + " short reverse profit hit")
-                self.executionTracker._shortProfitHit = True
-                self.done = True
-                
-            if orderID == self.updated_tracker.getShortStopID() and not self.updated_tracker.isShortStopHit():
-                logger.info(self.symbol + " reverse short stop hit")
-                self.done = True
-                self.executionTracker._shortStopHit = True
-        else:
-            if self.executionTracker.isLongOrderSent():
-                if orderID == self.executionTracker._longOrder._openOrder.orderId and not self.executionTracker.isLongOrderFilled():
-                    email.sendEmail(self.symbol + ": Long entry filled.", "Order is active!")
-                    logger.info(self.symbol + " Long entry filled.")
-                    self.executionTracker._longOrderFilled = True
-                
-                if orderID == self.executionTracker._longOrder._stopOrder.orderId and not self.executionTracker.isShortOrderSent():
-                    logger.info(self.symbol + " Stop order hit, creating response order.")
-                    openOrder, profitOrder, stopOrder = orders.marketBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "SELL", self.quantity, self.profitTargetForShort, self.stopLossForShort)
-                    
-                    self.executionTracker.setShort(openOrder, profitOrder, stopOrder)
-                    
-                    self.ib.placeOrder(openOrder.orderId, self.contract, openOrder)
-                    self.ib.placeOrder(profitOrder.orderId, self.contract, profitOrder)
-                    self.ib.placeOrder(stopOrder.orderId, self.contract, stopOrder)
-                    
-                    self.update_globals_for_orders()
-                    
-                    self.executionTracker._longStopHit = True
-                    
-                if orderID == self.executionTracker._longOrder._profitOrder.orderId:
-                    logger.info(self.symbol + " long profit hit")
-                    self.executionTracker._longProfitHit = True
-                    self.done = True
-                    
-            if self.executionTracker.isShortOrderSent():
-                if orderID == self.executionTracker._shortOrder._openOrder.orderId and not self.executionTracker.isShortOrderFilled():
-                    email.sendEmail(self.symbol + ": Short entry filled.", "Order is active!")
-                    logger.info(self.symbol + " Short entry filled.")
-                    self.executionTracker._shortOrderFilled = True
-                
-                if orderID == self.executionTracker._shortOrder._stopOrder.orderId and not self.executionTracker.isLongOrderSent():
-                    logger.info(self.symbol + " Stop order hit, creating response order.")
-                    openOrder, profitOrder, stopOrder = orders.marketBracketOrder(self.symbol, gb.Globals.getInstance().getOrderId(3), "BUY", self.quantity, self.profitTargetForLong, self.stopLossForLong)
-                    
-                    self.executionTracker.setLong(openOrder, profitOrder, stopOrder)
-                    
-                    self.ib.placeOrder(openOrder.orderId, self.contract, openOrder)
-                    self.ib.placeOrder(profitOrder.orderId, self.contract, profitOrder)
-                    self.ib.placeOrder(stopOrder.orderId, self.contract, stopOrder)
-                
-                    self.update_globals_for_orders()
-                    
-                    self.executionTracker._shortStopHit = True
-                
-                if orderID == self.executionTracker._shortOrder._profitOrder.orderId:
-                    logger.info(self.symbol + " short profit hit")
-                    self.executionTracker._shortProfitHit = True
-                    self.done = True
+        pass
 
     def cancel_entry_order(self, orderID):
         logger.info(self.symbol + " canceling")
@@ -122,7 +47,7 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
         return bar
                     
     def on_realtime_update(self, reqId, time, open_, high, low, close, volume, wap, count):
-        self.check_end_of_day()
+        #self.check_end_of_day()
         
         if self.done:
             return
@@ -143,7 +68,9 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
             self.startingBars.append(bar)
             logger.info(self.symbol + ": Creating open bar")
         else:
-            
+            logger.info(self.symbol + " is working!!!")
+            self.done = True
+            """
             if self.openBar is None:
                 self.openBar = bars.Bar()
                 self.openBar.low = min(o.low for o in self.startingBars)
@@ -247,3 +174,4 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
                     self.update_globals_for_orders()
                     
                     logger.info("Short " + self.symbol)
+                """

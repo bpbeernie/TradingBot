@@ -66,7 +66,7 @@ class OpenBotBase:
 
         # Request Market Data
         print("Start: " + self.symbol + str(self.reqId))
-        self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 1, [])
+        self.ib.reqRealTimeBars(self.reqId, self.contract, 5, "TRADES", 0, [])
 
     def on_bar_update(self, reqId, bar, realtime):
         pass
