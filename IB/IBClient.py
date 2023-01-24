@@ -66,9 +66,10 @@ class IBApi(EWrapper,EClient):
         except Exception as e:
             print(e)
             
-    def error(self, id, errorCode, errorMsg):
+    def error(self, id, errorCode, errorMsg, advancedOrderRejectJson = ""):
         print(errorCode)
         print(errorMsg)
+        print(advancedOrderRejectJson)
         
     def updatePortfolio(self, contract, position,
                     marketPrice, marketValue,averageCost, unrealizedPNL, realizedPNL, accountName):
