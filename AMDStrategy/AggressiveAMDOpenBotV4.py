@@ -107,7 +107,10 @@ class AggressiveAMDBotV4(OpenBotBase.OpenBotBase):
 
     def cancel_entry_order(self, orderID):
         logger.info(self.symbol + " canceling")
-        self.ib.cancelOrder(orderID, "")
+        try:
+            self.ib.cancelOrder(orderID, "")
+        except:
+            self.ib.cancelOrder(orderID)
         self.done = True
        
     def processBar(self, time, open_, high, low, close, volume):
